@@ -24,25 +24,23 @@
 //  along with this program; if not, write to the Free Software              //
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
-	include '../../mainfile.php';
+    include __DIR__ . '/../../mainfile.php';
 
-	require_once XOOPS_ROOT_PATH.'/class/template.php';
+    require_once XOOPS_ROOT_PATH.'/class/template.php';
 
-	$xoopsTpl = new XoopsTpl();
+    $xoopsTpl = new XoopsTpl();
 
-	$xfid = $xoopsDB->getInsertId();
+    $xfid = $xoopsDB->getInsertId();
 
-	$sql = "
+    $sql = '
 	SELECT title, artist, album, year, addinfo, track, genre, length, bitrate, frequence, approved
-	FROM ".$xoopsDB->prefix('debaser_files')."
-	ORDER BY xfid DESC";
+	FROM ' . $xoopsDB->prefix('debaser_files') . '
+	ORDER BY xfid DESC';
 
-	$result = $xoopsDB->query($sql);
+    $result = $xoopsDB->query($sql);
 
-	list($title, $artist, $album, $year, $addinfo, $track, $genre, $length, $bitrate, $frequence, $approved) = $xoopsDB->fetchRow($result);
+    list($title, $artist, $album, $year, $addinfo, $track, $genre, $length, $bitrate, $frequence, $approved) = $xoopsDB->fetchRow($result);
 
-	$xoopsTpl->assign(array('title' => $title, 'artist' => $artist, 'album' => $album, 'year' => $year, 'addinfo' => $addinfo, 'track' => $track, 'genre' => $genre, 'length' => $length, 'bitrate' => $bitrate, 'frequence' => $frequence, 'approved' => $approved, 'maintheme' => xoops_getcss($xoopsConfig['theme_set'])));
+    $xoopsTpl->assign(array('title' => $title, 'artist' => $artist, 'album' => $album, 'year' => $year, 'addinfo' => $addinfo, 'track' => $track, 'genre' => $genre, 'length' => $length, 'bitrate' => $bitrate, 'frequence' => $frequence, 'approved' => $approved, 'maintheme' => xoops_getcss($xoopsConfig['theme_set'])));
 
-	$xoopsTpl->display('db:debaser_uploadresult.html');
-
-?>
+    $xoopsTpl->display('db:debaser_uploadresult.html');

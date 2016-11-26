@@ -25,127 +25,122 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	include '../../mainfile.php';
-	include_once XOOPS_ROOT_PATH.'/class/xoopsmodule.php';
-	include_once XOOPS_ROOT_PATH . '/class/pagenav.php';
+include __DIR__ . '/../../mainfile.php';
+include_once XOOPS_ROOT_PATH . '/class/xoopsmodule.php';
+include_once XOOPS_ROOT_PATH . '/class/pagenav.php';
 
-	$start = isset( $_GET['start'] ) ? intval( $_GET['start'] ) : 0;
+$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
 
-	$xoopsOption['template_main'] = 'debaser_genre.html';
+$GLOBALS['xoopsOption']['template_main'] = 'debaser_genre.html';
 
-	include XOOPS_ROOT_PATH.'/header.php';
+include XOOPS_ROOT_PATH . '/header.php';
 
-	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
-	$module_id = $xoopsModule->getVar('mid');
-	$gperm_handler = &xoops_gethandler('groupperm');
+$groups       = is_object($xoopsUser) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+$module_id    = $xoopsModule->getVar('mid');
+$gpermHandler = xoops_getHandler('groupperm');
 
-		if (isset($_GET['genreid'])) {
-		$genrelist = $_GET['genreid'];
-		}
+if (isset($_GET['genreid'])) {
+    $genrelist = $_GET['genreid'];
+}
 
-         if(get_magic_quotes_gpc()) {
-            $gid        = stripslashes($_GET['genreid']);
-        } else {
-            $gid        = $_GET['genreid'];
-        }  
-    
-	$sql2 = "
+if (get_magic_quotes_gpc()) {
+    $gid = stripslashes($_GET['genreid']);
+} else {
+    $gid = $_GET['genreid'];
+}
+
+$sql2 = '
 	SELECT d.xfid, d.filename, d.artist, d.title, d.album, d.year, d.addinfo, d.track, d.genre, d.length, d.bitrate, d.link, d.frequence, d.approved, d.weight, d.hits, d.views, t.genreid, t.genretitle
-	FROM ".$xoopsDB->prefix('debaser_files')." d, ".$xoopsDB->prefix('debaser_genre')." t
-	WHERE t.genreid=mysql_real_escape_string($gid) 
+	FROM ' . $xoopsDB->prefix('debaser_files') . ' d, ' . $xoopsDB->prefix('debaser_genre') . ' t
+	WHERE t.genreid=' . $GLOBALS['xoopsDB']->escape($gid) . '
 	AND d.genre=t.genretitle
 	AND d.approved = 1
-	ORDER BY ".$xoopsModuleConfig['index_sortby']." ".$xoopsModuleConfig['index_orderby']." ";
+	ORDER BY ' . $xoopsModuleConfig['index_sortby'] . ' ' . $xoopsModuleConfig['index_orderby'] . ' ';
 
-	$resultarts = $xoopsDB -> query($sql2);
-	$result = $xoopsDB -> query( $sql2, $xoopsModuleConfig['indexperpage'], $start );
 
-	$totalarts = $xoopsDB -> getRowsNum( $resultarts );
+    $resultarts = $xoopsDB->query($sql2);
+    $result     = $xoopsDB->query($sql2, $xoopsModuleConfig['indexperpage'], $start);
 
-	$category = array();
+    $totalarts = $xoopsDB->getRowsNum($resultarts);
 
-	$category['total'] = $totalarts;
+    $category = array();
 
-	$totalarts = 0;
+    $category['total'] = $totalarts;
 
-	$filelist = array();
+    $totalarts = 0;
 
-		while ($sqlfetch = $xoopsDB->fetchArray($result)) {
+    $filelist = array();
 
-			if ($xoopsModuleConfig['usefileperm'] == 1) {
+        while ($sqlfetch = $xoopsDB->fetchArray($result)) {
+            if ($xoopsModuleConfig['usefileperm'] == 1) {
+                if ($gpermHandler->checkRight('DebaserFilePerm', $sqlfetch['xfid'], $groups, $module_id)) {
+                    $filelist['id']        = $sqlfetch['xfid'];
+                    $filelist['filename']  = $sqlfetch['filename'];
+                    $filelist['artist']    = $sqlfetch['artist'];
+                    $filelist['title']     = $sqlfetch['title'];
+                    $filelist['album']     = $sqlfetch['album'];
+                    $filelist['year']      = $sqlfetch['year'];
+                    $filelist['addinfo']   = $sqlfetch['addinfo'];
+                    $filelist['track']     = $sqlfetch['track'];
+                    $filelist['genre']     = $sqlfetch['genre'];
+                    $filelist['length']    = $sqlfetch['length'];
+                    $filelist['bitrate']   = $sqlfetch['bitrate'];
+                    $filelist['link']      = $sqlfetch['link'];
+                    $filelist['frequence'] = $sqlfetch['frequence'];
+                    $filelist['hits']      = $sqlfetch['hits'];
+                    $filelist['views']     = $sqlfetch['views'];
+                    $xoopsTpl->append('filelist', $filelist);
 
-				if ($gperm_handler->checkRight('DebaserFilePerm', $sqlfetch['xfid'] , $groups, $module_id)) {
-				$filelist['id'] = $sqlfetch['xfid'];
-				$filelist['filename'] = $sqlfetch['filename'];
-				$filelist['artist'] = $sqlfetch['artist'];
-				$filelist['title'] = $sqlfetch['title'];
-				$filelist['album'] = $sqlfetch['album'];
-				$filelist['year'] = $sqlfetch['year'];
-				$filelist['addinfo'] = $sqlfetch['addinfo'];
-				$filelist['track'] = $sqlfetch['track'];
-				$filelist['genre'] = $sqlfetch['genre'];
-				$filelist['length'] = $sqlfetch['length'];
-				$filelist['bitrate'] = $sqlfetch['bitrate'];
-				$filelist['link'] = $sqlfetch['link'];
-				$filelist['frequence'] = $sqlfetch['frequence'];
-				$filelist['hits'] = $sqlfetch['hits'];
-				$filelist['views'] = $sqlfetch['views'];
-				$xoopsTpl->append('filelist', $filelist);
+                    $totalarts++;
+                }
+            } else {
+                $filelist['id']        = $sqlfetch['xfid'];
+                $filelist['filename']  = $sqlfetch['filename'];
+                $filelist['artist']    = $sqlfetch['artist'];
+                $filelist['title']     = $sqlfetch['title'];
+                $filelist['album']     = $sqlfetch['album'];
+                $filelist['year']      = $sqlfetch['year'];
+                $filelist['addinfo']   = $sqlfetch['addinfo'];
+                $filelist['track']     = $sqlfetch['track'];
+                $filelist['genre']     = $sqlfetch['genre'];
+                $filelist['length']    = $sqlfetch['length'];
+                $filelist['bitrate']   = $sqlfetch['bitrate'];
+                $filelist['link']      = $sqlfetch['link'];
+                $filelist['frequence'] = $sqlfetch['frequence'];
+                $filelist['hits']      = $sqlfetch['hits'];
+                $filelist['views']     = $sqlfetch['views'];
+                $xoopsTpl->append('filelist', $filelist);
 
-				$totalarts++;
-				}
-			}
-			else {
-			$filelist['id'] = $sqlfetch['xfid'];
-			$filelist['filename'] = $sqlfetch['filename'];
-			$filelist['artist'] = $sqlfetch['artist'];
-			$filelist['title'] = $sqlfetch['title'];
-			$filelist['album'] = $sqlfetch['album'];
-			$filelist['year'] = $sqlfetch['year'];
-			$filelist['addinfo'] = $sqlfetch['addinfo'];
-			$filelist['track'] = $sqlfetch['track'];
-			$filelist['genre'] = $sqlfetch['genre'];
-			$filelist['length'] = $sqlfetch['length'];
-			$filelist['bitrate'] = $sqlfetch['bitrate'];
-			$filelist['link'] = $sqlfetch['link'];
-			$filelist['frequence'] = $sqlfetch['frequence'];
-			$filelist['hits'] = $sqlfetch['hits'];
-			$filelist['views'] = $sqlfetch['views'];
-			$xoopsTpl->append('filelist', $filelist);
+                $totalarts++;
+            }
+        }
 
-			$totalarts++;
-			}
-		}
+    $pagenav            = new XoopsPageNav($category['total'], $xoopsModuleConfig['indexperpage'], $start, 'start', 'genreid=' . $genrelist);
+    $category['navbar'] = $pagenav->renderNav(2);
 
-	$pagenav = new XoopsPageNav( $category['total'], $xoopsModuleConfig['indexperpage'], $start, 'start', 'genreid=' . $genrelist );
-	$category['navbar'] = $pagenav -> renderNav(2);
+    $xoopsTpl->assign('category', $category);
 
-	$xoopsTpl->assign('category', $category);
+        if (empty($filelist['id'])) {
+            redirect_header('index.php', 1, _MD_DEBASER_NOFILES);
+        } else {
+            $xoopsTpl->assign('genrelist', $filelist['genre']);
+        }
 
-		if (empty($filelist['id'])) {
-		redirect_header('index.php', 1, _MD_DEBASER_NOFILES);
-		}
-		else {
-		$xoopsTpl->assign('genrelist', $filelist['genre']);
-		}
+        if ($xoopsUser) {
+            $xoopsModule = XoopsModule::getByDirname('debaser');
 
-		if ($xoopsUser) {
-		$xoopsModule = XoopsModule::getByDirname('debaser');
+            if ($xoopsUser->isAdmin($xoopsModule->mid())) {
+                $xoopsTpl->assign('isxadmin', true);
+            }
+        }
 
-			if ( $xoopsUser->isAdmin($xoopsModule->mid()) ) {
-			$xoopsTpl->assign('isxadmin', true);
-			}
-		}
+    /* determine if downloads are allowed or if download is a link */
+        if ($xoopsModuleConfig['debaserallowdown'] == 1) {
+            $xoopsTpl->assign('allowyes', true);
+        }
 
-	/* determine if downloads are allowed or if download is a link */
-		if ($xoopsModuleConfig['debaserallowdown'] == 1) {
-		$xoopsTpl->assign("allowyes", true);
-		}
+        if ($xoopsModuleConfig['usetooltips'] == 1) {
+            $xoopsTpl->assign('usetooltips', true);
+        }
 
-		if ($xoopsModuleConfig['usetooltips'] == 1) {
-		$xoopsTpl->assign("usetooltips", true);
-		}
-
-	include_once XOOPS_ROOT_PATH.'/footer.php';
-
-?>
+    include_once XOOPS_ROOT_PATH . '/footer.php';

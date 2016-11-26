@@ -25,32 +25,30 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	function debaser_showradio() {
+    function debaser_showradio()
+    {
+        $moduleHandler = xoops_getHandler('module');
+        $module = $moduleHandler->getByDirname('debaser');
+        $configHandler = xoops_getHandler('config');
+        $moduleConfig =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
 
-	$module_handler =& xoops_gethandler('module');
-	$module =& $module_handler->getByDirname('debaser');
-	$config_handler =& xoops_gethandler('config');
-	$moduleConfig =& $config_handler->getConfigsByCat(0, $module->getVar('mid'));
+        global $xoopsDB;
 
-	global $xoopsDB;
+        $myts = MyTextSanitizer::getInstance();
+        $block = array();
+        $sql = 'SELECT radio_id, radio_name FROM ' . $xoopsDB->prefix('debaserradio') . ' ORDER BY radio_name ASC';
+        $result = $xoopsDB->query($sql);
 
-		$myts =& MyTextSanitizer::getInstance();
-		$block = array();
-		$sql = "SELECT radio_id, radio_name FROM ".$xoopsDB->prefix('debaserradio')." ORDER BY radio_name ASC";
-		$result = $xoopsDB->query($sql);
+        while ($myrow = $xoopsDB->fetchArray($result)) {
+            $webradios = array();
+            $radio_id = $myts->makeTboxData4Show($myrow['radio_id']);
+            $radio_name = $myts->makeTboxData4Show($myrow['radio_name']);
 
-	while ( $myrow = $xoopsDB->fetchArray($result) ) {
-		$webradios = array();
-		$radio_id = $myts->makeTboxData4Show($myrow['radio_id']);
-		$radio_name = $myts->makeTboxData4Show($myrow['radio_name']);
-
-		$webradios['radio_id'] = $radio_id;
-		$webradios['radio_name'] = $radio_name;
+            $webradios['radio_id'] = $radio_id;
+            $webradios['radio_name'] = $radio_name;
 
 
-		$block['debaser_radios'][] = $webradios;
-	}
-	return $block;
-}
-
-?>
+            $block['debaser_radios'][] = $webradios;
+        }
+        return $block;
+    }

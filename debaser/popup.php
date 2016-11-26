@@ -3,7 +3,7 @@
 /* PHP-NUKE: Internet Radio Block/Module                                  */
 /* =====================================                                  */
 /*                                                                        */
-/* Copyright (c) 2003 by René Hart (webmaster@just4me.nl)                 */
+/* Copyright (c) 2003 by RenÃ© Hart (webmaster@just4me.nl)                 */
 /* http://www.just4me.nl                                                  */
 /*                                                                        */
 /* This program is free software. You can redistribute it and/or modify   */
@@ -27,38 +27,38 @@ This version ported to Xoops and extensively modified
 by frankblack <frankblack@myxoops.de
 */
 
-	include '../../mainfile.php';
+    include __DIR__ . '/../../mainfile.php';
 
-	require_once XOOPS_ROOT_PATH.'/class/template.php';
+    require_once XOOPS_ROOT_PATH.'/class/template.php';
 
-	$xoopsTpl = new XoopsTpl();
+    $xoopsTpl = new XoopsTpl();
 
-	$radio_id = $_GET['select'];
+    $radio_id = $_GET['select'];
 
-	$sql = "
+    $sql = '
 	SELECT radio_name, radio_stream, radio_url, radio_picture
-	FROM ".$xoopsDB->prefix('debaserradio')."
-	WHERE radio_id = ".intval($radio_id)."";
+	FROM ' . $xoopsDB->prefix('debaserradio') . '
+	WHERE radio_id = ' . (int)$radio_id . '';
 
-	$result = $xoopsDB->query($sql);
+    $result = $xoopsDB->query($sql);
 
-	list($radio_name, $radio_stream, $radio_url, $radio_picture) = $xoopsDB->fetchRow($result);
+    list($radio_name, $radio_stream, $radio_url, $radio_picture) = $xoopsDB->fetchRow($result);
 
-	$xoopsTpl->assign('radio_name', $radio_name);
-	$xoopsTpl->assign('radio_url', $radio_url);
+    $xoopsTpl->assign('radio_name', $radio_name);
+    $xoopsTpl->assign('radio_url', $radio_url);
 
-		if ($radio_url != '') {
-		$xoopsTpl->assign('urlavail', true);
-		$xoopsTpl->assign('radio_url', $radio_url);
-		}
+        if ($radio_url != '') {
+            $xoopsTpl->assign('urlavail', true);
+            $xoopsTpl->assign('radio_url', $radio_url);
+        }
 
-		if ($radio_picture != '') {
-		$xoopsTpl->assign('pictureavail', true);
-		$xoopsTpl->assign('radio_picture', $radio_picture);
-		}
+        if ($radio_picture != '') {
+            $xoopsTpl->assign('pictureavail', true);
+            $xoopsTpl->assign('radio_picture', $radio_picture);
+        }
 
-		if (check_real($radio_stream) == true) {
-		$xoopsTpl->assign('radioplayer', "<object id=player classid='clsid:cfcdaa03-8be4-11cf-b84b-0020afbbccfa' height='60' width='300'>
+        if (check_real($radio_stream) === true) {
+            $xoopsTpl->assign('radioplayer', "<object id=player classid='clsid:cfcdaa03-8be4-11cf-b84b-0020afbbccfa' height='60' width='300'>
 		<param name='controls' value='controlpanel,statusfield' />
 		<param name='console' value='clip1' />
 		<param name='autostart' value='1' />
@@ -67,10 +67,9 @@ by frankblack <frankblack@myxoops.de
 		</embed>
 		<noembed><a href='$radio_stream>play $radio_name</a></noembed>
 		</object>");
-		}
-		else {
-		$xoopsTpl->assign('radioplayer', "
-		<object id='player' height='50' width='300' classid='clsid:22d6f312-b0f6-11d0-94ab-0080c74c7e95' codebase='http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab#version=6,4,7,1112' standby='loading microsoft® windows® media player components...' type='application/x-oleobject'>
+        } else {
+            $xoopsTpl->assign('radioplayer', "
+		<object id='player' height='50' width='300' classid='clsid:22d6f312-b0f6-11d0-94ab-0080c74c7e95' codebase='http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab#version=6,4,7,1112' standby='loading microsoftÂ® windowsÂ® media player components...' type='application/x-oleobject'>
 		<param name='filename' value='$radio_stream' />
 		<param name='showcontrols' value='true' />
 		<param name='showstatusbar' value='true' />
@@ -80,44 +79,36 @@ by frankblack <frankblack@myxoops.de
 		</embed>
 		<noembed><a href='$radio_stream'>play $radio_name</a></noembed>
 		</object>");
-		}
+        }
 
-	/* Function to check for real player files */
+    /* Function to check for real player files */
 
-	function check_real($t_url) {
+    function check_real($t_url)
+    {
+        $temp_url = basename($t_url);
+        $temp_url = trim($temp_url);
+        $temp_url = strtolower($temp_url);
+        $check_ram = substr($temp_url, -3);
+        $check_rm = substr($temp_url, -2);
+        $check_smil = substr($temp_url, -4);
 
-	$temp_url = basename($t_url);
-	$temp_url = trim($temp_url);
-	$temp_url = strtolower($temp_url);
-	$check_ram = substr($temp_url, -3);
-	$check_rm = substr($temp_url, -2);
-	$check_smil = substr($temp_url, -4);
+        if ($check_rm == 'rm') {
+            return true;
+        } elseif ($check_ram == 'ram') {
+            return true;
+        } elseif ($check_rm == 'ra') {
+            return true;
+        } elseif ($check_ram == 'pls') {
+            return true;
+        } elseif ($check_ram == 'rpm') {
+            return true;
+        } elseif ($check_smil == 'smil') {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		if ($check_rm == "rm") {
-		return true;
-		}
-		elseif ($check_ram == "ram") {
-		return true;
-		}
-		elseif ($check_rm == "ra") {
-		return true;
-		}
-		elseif ($check_ram == "pls") {
-		return true;
-		}
-		elseif ($check_ram == "rpm") {
-		return true;
-		}
-		elseif ($check_smil == "smil") {
-		return true;
-		}
-		else {
-		return false;
-		}
-	}
+    $xoopsTpl->assign('maintheme', xoops_getcss($xoopsConfig['theme_set']));
 
-	$xoopsTpl->assign("maintheme", xoops_getcss($xoopsConfig['theme_set']));
-
-	$xoopsTpl->display('db:debaser_radiopopup.html');
-
-?>
+    $xoopsTpl->display('db:debaser_radiopopup.html');

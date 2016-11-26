@@ -8,73 +8,67 @@
  * Licence: GNU
  */
 
-	include 'admin_header.php';
-	include_once XOOPS_ROOT_PATH.'/class/xoopsform/grouppermform.php';
-	include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
+    include __DIR__ . '/admin_header.php';
+    include_once XOOPS_ROOT_PATH.'/class/xoopsform/grouppermform.php';
+    include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
 
-	xoops_cp_header();
-	debaseradminMenu(_AM_DEBASER_PERM_MANAGEMENT);
+    xoops_cp_header();
+    debaseradminMenu(_AM_DEBASER_PERM_MANAGEMENT);
 
-	if ($xoopsModuleConfig['usecatperm'] == 1) {
-	echo "
+    if ($xoopsModuleConfig['usecatperm'] == 1) {
+        echo "
 		<div style='float: left; width:100%;'>
 		<fieldset><legend style='font-weight: bold; color: #900;'>"._AM_DEBASER_PERM_CPERMISSIONS."</legend>\n
 		<div style='padding: 2px;'>\n";
 
-	$cat_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserCatPerm', _AM_DEBASER_PERM_CSELECTPERMISSIONS );
+        $cat_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserCatPerm', _AM_DEBASER_PERM_CSELECTPERMISSIONS);
 
-	$result = $xoopsDB->query("
+        $result = $xoopsDB->query('
 	SELECT genreid, subgenreid, genretitle 
-	FROM " . $xoopsDB->prefix('debaser_genre'));
+	FROM ' . $xoopsDB->prefix('debaser_genre'));
 
-		if ($xoopsDB->getRowsNum($result)) {
+        if ($xoopsDB->getRowsNum($result)) {
+            while ($cat_row = $xoopsDB->fetchArray($result)) {
+                $cat_form->addItem($cat_row['genreid'], $cat_row['genretitle'], $cat_row['subgenreid']);
+            }
 
-			while ($cat_row = $xoopsDB->fetchArray($result)) {
-			$cat_form->addItem($cat_row['genreid'], $cat_row['genretitle'], $cat_row['subgenreid']);
-			} 
+            echo $cat_form->render();
+        } else {
+            echo '<div><strong>' . _AM_DEBASER_PERM_CNOCATEGORY . '</strong></div>';
+        }
 
-		echo $cat_form->render();
-		}
-		else {
-		echo "<div><strong>"._AM_DEBASER_PERM_CNOCATEGORY."</strong></div>";
-		} 
-
-	echo "</div></fieldset></div><br />";
-	unset ($cat_form);
-	}
+        echo '</div></fieldset></div><br />';
+        unset($cat_form);
+    }
 
 /*
 * File permission form
-*/ 
-	if ($xoopsModuleConfig['usefileperm'] == 1) {
-	echo "
+*/
+    if ($xoopsModuleConfig['usefileperm'] == 1) {
+        echo "
 		<div style='float: left; width:100%;'>
 		<fieldset><legend style='font-weight: bold; color: #900;'>"._AM_DEBASER_PERM_FPERMISSIONS."</legend>\n
 		<div style='padding: 2px;'>\n";
-	$file_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserFilePerm', _AM_DEBASER_PERM_FSELECTPERMISSIONS);
+        $file_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserFilePerm', _AM_DEBASER_PERM_FSELECTPERMISSIONS);
 
-	$result2 = $xoopsDB->query("
+        $result2 = $xoopsDB->query('
 	SELECT xfid, title 
-	FROM " . $xoopsDB->prefix('debaser_files'));
+	FROM ' . $xoopsDB->prefix('debaser_files'));
 
-		if ($xoopsDB->getRowsNum($result2)) {
+        if ($xoopsDB->getRowsNum($result2)) {
+            while ($file_row = $xoopsDB->fetchArray($result2)) {
+                $file_form->addItem($file_row['xfid'], $file_row['title'], 0);
+            }
 
-			while ($file_row = $xoopsDB->fetchArray($result2)) {
-			$file_form->addItem($file_row['xfid'], $file_row['title'], 0);
-			} 
+            echo $file_form->render();
+        } else {
+            echo '<div><strong>' . _AM_DEBASER_PERM_FNOFILES . '</strong></div>';
+        }
 
-		echo $file_form->render();
-		} 
-		else {
-		echo "<div><strong>"._AM_DEBASER_PERM_FNOFILES."</strong></div>";
-		} 
+        echo '</div></fieldset></div><br />';
+        unset($file_form);
+    }
 
-	echo "</div></fieldset></div><br />";
-	unset ($file_form);
-	}
+    echo _AM_DEBASER_PERM_PERMSNOTE;
 
-	echo _AM_DEBASER_PERM_PERMSNOTE;
-
-	xoops_cp_footer();
-
-?>
+    xoops_cp_footer();

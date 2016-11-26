@@ -25,109 +25,102 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	include '../../mainfile.php';
-	include XOOPS_ROOT_PATH.'/header.php';
-	include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
+    include __DIR__ . '/../../mainfile.php';
+    include XOOPS_ROOT_PATH.'/header.php';
+    include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
 
-	require_once XOOPS_ROOT_PATH.'/class/template.php';
+    require_once XOOPS_ROOT_PATH.'/class/template.php';
 
-	$xoopsTpl = new XoopsTpl();
+    $xoopsTpl = new XoopsTpl();
 
-	/* establish file id */
-	$fileid = ($_GET['id']) ? $_GET['id'] : 1;
-	
-	$playerid = ($_GET['player']) ? $_GET['player'] : 1;
+    /* establish file id */
+    $fileid = $_GET['id'] ?: 1;
+    
+    $playerid = $_GET['player'] ?: 1;
 
-	/* get the userid */
-		if (is_object($xoopsUser)) {
-		$uid = $xoopsUser->getVar('uid');
-		}
-		else {
-		$uid = 0;
-		}
-	/* -- */
+    /* get the userid */
+        if (is_object($xoopsUser)) {
+            $uid = $xoopsUser->getVar('uid');
+        } else {
+            $uid = 0;
+        }
+    /* -- */
 
-	$playsql = "SELECT useplayer FROM ".$xoopsDB->prefix('debaser_user')." WHERE uid = ".intval($uid)." ";
-	$playresult = $xoopsDB->query($playsql);
+    $playsql = 'SELECT useplayer FROM ' . $xoopsDB->prefix('debaser_user') . ' WHERE uid = ' . (int)$uid . ' ';
+    $playresult = $xoopsDB->query($playsql);
 
-	list($playervar) = $xoopsDB->fetchRow($playresult);
+    list($playervar) = $xoopsDB->fetchRow($playresult);
 
-	/* load current song */
-	$filename = '';
-	$sql = "SELECT xfid, filename, artist, title, link, fileext FROM ".$xoopsDB->prefix('debaser_files')." WHERE xfid = ".intval($fileid)." ";
+    /* load current song */
+    $filename = '';
+    $sql = 'SELECT xfid, filename, artist, title, link, fileext FROM ' . $xoopsDB->prefix('debaser_files') . ' WHERE xfid = ' . (int)$fileid . ' ';
 
-	$result = $xoopsDB->query($sql);
+    $result = $xoopsDB->query($sql);
 
-	list($songid, $filename, $artist, $title, $link, $fileext) = $xoopsDB->fetchRow($result);
+    list($songid, $filename, $artist, $title, $link, $fileext) = $xoopsDB->fetchRow($result);
 
-		if ($link == '') {
-		$mp3file = 'upload/'.$filename;
-		}
-		else {
-		$mp3file = $link;
-		}
+        if ($link == '') {
+            $mp3file = 'upload/'.$filename;
+        } else {
+            $mp3file = $link;
+        }
 
-	$xoopsTpl->assign('songid', $songid);
-	$xoopsTpl->assign('artist', $artist);
-	$xoopsTpl->assign('title', $title);
+    $xoopsTpl->assign('songid', $songid);
+    $xoopsTpl->assign('artist', $artist);
+    $xoopsTpl->assign('title', $title);
 
-	preg_match("/".$fileext."\/([0-9]+)/", $playervar, $whichplayer);
+    preg_match('/' . $fileext . "\/([0-9]+)/", $playervar, $whichplayer);
 
-	$whichplayer = $whichplayer[1];
+    $whichplayer = $whichplayer[1];
 
-	/* player */
-	$player = '';
+    /* player */
+    $player = '';
 
-		if (is_object($xoopsUser)) {
-		$sql = "SELECT html_code, height, width, autostart FROM ".$xoopsDB->prefix('debaser_player')." WHERE xpid = $whichplayer ";
+        if (is_object($xoopsUser)) {
+            $sql = 'SELECT html_code, height, width, autostart FROM ' . $xoopsDB->prefix('debaser_player') . " WHERE xpid = $whichplayer ";
 
-		$result = $xoopsDB->query($sql);
-		list($player, $height, $width, $autostart) = $xoopsDB->fetchRow($result);
-		
-			if ($result) {
-			//$row = mysql_fetch_object($result);
- 				if ($autostart == 1) {
-	$autostart = 'true';
-	}
-	else {
-	$autostart = 'false';
-	}
+            $result = $xoopsDB->query($sql);
+            list($player, $height, $width, $autostart) = $xoopsDB->fetchRow($result);
+        
+            if ($result) {
+                //$row = $GLOBALS['xoopsDB']->fetchObject($result);
+                if ($autostart == 1) {
+                    $autostart = 'true';
+                } else {
+                    $autostart = 'false';
+                }
 
-	/* generate output */
-	$player1 = str_replace('<@height@>',$height,$player);
-	$player2 = str_replace('<@width@>',$width,$player1);
-	$player3 = str_replace('<@autostart@>',$autostart,$player2);
-			}
-			else {
-		$player3 .= preselected_player($fileid);
-			}
-		}
-		else {
-		$player3 .= preselected_player($fileid);
-		}
-	
-	$player4 = str_replace('<@mp3file@>',$mp3file,$player3);
-	$xoopsTpl->assign("player", $player4);
+    /* generate output */
+    $player1 = str_replace('<@height@>', $height, $player);
+                $player2 = str_replace('<@width@>', $width, $player1);
+                $player3 = str_replace('<@autostart@>', $autostart, $player2);
+            } else {
+                $player3 .= preselected_player($fileid);
+            }
+        } else {
+            $player3 .= preselected_player($fileid);
+        }
+    
+    $player4 = str_replace('<@mp3file@>', $mp3file, $player3);
+    $xoopsTpl->assign('player', $player4);
 
-	$allowyes = 1;
+    $allowyes = 1;
 
-	/* determine if downloads are allowed or if download is a link */
-		if ($xoopsModuleConfig['debaserallowdown'] == 1) {
-		$xoopsTpl->assign("allowyes", $allowyes);
+    /* determine if downloads are allowed or if download is a link */
+        if ($xoopsModuleConfig['debaserallowdown'] == 1) {
+            $xoopsTpl->assign('allowyes', $allowyes);
 
-			if ($link != '') {
-			$xoopsTpl->assign('linkyes', true);
-			$xoopsTpl->assign('downlink', $link);
-			}
-		}
+            if ($link != '') {
+                $xoopsTpl->assign('linkyes', true);
+                $xoopsTpl->assign('downlink', $link);
+            }
+        }
 
-	$xoopsDB->queryF("
-	UPDATE ".$xoopsDB->prefix('debaser_files')." 
+    $xoopsDB->queryF('
+	UPDATE ' . $xoopsDB->prefix('debaser_files') . ' 
 	SET views = views+1 
-	WHERE xfid = ".$songid."");
+	WHERE xfid = ' . $songid . '');
 
-	$xoopsTpl->assign("maintheme", xoops_getcss($xoopsConfig['theme_set']));
+    $xoopsTpl->assign('maintheme', xoops_getcss($xoopsConfig['theme_set']));
 
-	$xoopsTpl->display('db:debaser_player.html');
-
-?>
+    $xoopsTpl->display('db:debaser_player.html');

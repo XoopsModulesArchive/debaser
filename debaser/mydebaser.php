@@ -25,99 +25,95 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	include '../../mainfile.php';
-	include XOOPS_ROOT_PATH.'/class/xoopsformloader.php';
-	include_once XOOPS_ROOT_PATH.'/class/xoopstree.php';
+    include __DIR__ . '/../../mainfile.php';
+    include XOOPS_ROOT_PATH.'/class/xoopsformloader.php';
+    include_once XOOPS_ROOT_PATH.'/class/xoopstree.php';
 
-	$xoopsOption['template_main'] = 'debaser_mydebaser.html';
+    $GLOBALS['xoopsOption']['template_main'] = 'debaser_mydebaser.html';
 
-	include XOOPS_ROOT_PATH.'/header.php';
+    include XOOPS_ROOT_PATH.'/header.php';
 
-		//get the userid
-		if (is_object($xoopsUser)) {
-		$uid = $xoopsUser->getVar('uid');
-		}
-		else {
-		$uid = 0;
-		}
-		//
+        //get the userid
+        if (is_object($xoopsUser)) {
+            $uid = $xoopsUser->getVar('uid');
+        } else {
+            $uid = 0;
+        }
+        //
 
-	$playerlist = array();
+    $playerlist = array();
 
-	$sql2 = "
+    $sql2 = '
 	SELECT xpid, name
-	FROM ".$xoopsDB->prefix('debaser_player')." ORDER BY name";
+	FROM ' . $xoopsDB->prefix('debaser_player') . ' ORDER BY name';
 
-	$result2 = $xoopsDB->query($sql2);
+    $result2 = $xoopsDB->query($sql2);
 
-		while ($sqlfetch2 = $xoopsDB->fetchArray($result2)) {
-		$playerlist['playerid'] = $sqlfetch2['xpid'];
-		$playerlist['playername'] = $sqlfetch2['name'];
-		$xoopsTpl->append('playerlist', $playerlist);
-		}
+        while ($sqlfetch2 = $xoopsDB->fetchArray($result2)) {
+            $playerlist['playerid'] = $sqlfetch2['xpid'];
+            $playerlist['playername'] = $sqlfetch2['name'];
+            $xoopsTpl->append('playerlist', $playerlist);
+        }
 
-	$extlist = array();
+    $extlist = array();
 
-	$sql3 = "
+    $sql3 = '
 	SELECT mime_id, mime_ext
-	FROM ".$xoopsDB->prefix('debaser_mimetypes')." ";
+	FROM ' . $xoopsDB->prefix('debaser_mimetypes') . ' ';
 
-	$result3 = $xoopsDB->query($sql3);
+    $result3 = $xoopsDB->query($sql3);
 
-		while ($sqlfetch3 = $xoopsDB->fetchArray($result3)) {
-		$extlist['mime_id'] = $sqlfetch3['mime_id'];
-		$extlist['mime_ext'] = $sqlfetch3['mime_ext'];
-		$xoopsTpl->append('extlist', $extlist);
-		}
+        while ($sqlfetch3 = $xoopsDB->fetchArray($result3)) {
+            $extlist['mime_id'] = $sqlfetch3['mime_id'];
+            $extlist['mime_ext'] = $sqlfetch3['mime_ext'];
+            $xoopsTpl->append('extlist', $extlist);
+        }
 
-		
-		
-	function selplayer() {
+        
+        
+    function selplayer()
+    {
+        global $xoopsDB, $uid;
 
-	global $xoopsDB, $uid;
+        $valuesfromselbox = '';
+        $zp=$_POST['selectvalues'];
 
-	$valuesfromselbox = '';
-	$zp=$_POST['selectvalues'];
+        for ($i=0; $i<count($zp); $i++) {
+            $valuesfromselbox = $valuesfromselbox . ' ' . $zp[$i];
+        }
 
-		for ($i=0; $i<count($zp); $i++) {
-		$valuesfromselbox = $valuesfromselbox." ".$zp[$i];
-		}
-
-	$sql1 = "
+        $sql1 = '
 	SELECT uid
-	FROM ".$xoopsDB->prefix('debaser_user')."
-	WHERE uid=".intval($uid)." ";
+	FROM ' . $xoopsDB->prefix('debaser_user') . '
+	WHERE uid=' . (int)$uid . ' ';
 
-	$result1 = $xoopsDB->query($sql1);
-	$sqlfetch1 = $xoopsDB->fetchRow($result1);
+        $result1 = $xoopsDB->query($sql1);
+        $sqlfetch1 = $xoopsDB->fetchRow($result1);
 
-		if ($sqlfetch1 == '') {
-		$xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_user')." (uid, useplayer) VALUES (".intval($uid).", ".$xoopsDB->quoteString($valuesfromselbox).")");
+        if ($sqlfetch1 == '') {
+            $xoopsDB->query('INSERT INTO ' . $xoopsDB->prefix('debaser_user') . ' (uid, useplayer) VALUES (' . (int)$uid . ', ' . $xoopsDB->quoteString($valuesfromselbox) . ')');
 
-		redirect_header('index.php',1,_MD_DEBASER_DBUPDATED);
-		}
-		else {
-		$xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_user')." SET useplayer = ".$xoopsDB->quoteString($valuesfromselbox)."  WHERE uid = ".intval($uid)." ");
+            redirect_header('index.php', 1, _MD_DEBASER_DBUPDATED);
+        } else {
+            $xoopsDB->query('UPDATE ' . $xoopsDB->prefix('debaser_user') . ' SET useplayer = ' . $xoopsDB->quoteString($valuesfromselbox) . '  WHERE uid = ' . (int)$uid . ' ');
 
-		redirect_header('index.php',1,_MD_DEBASER_DBUPDATED);
-		}
-	}
+            redirect_header('index.php', 1, _MD_DEBASER_DBUPDATED);
+        }
+    }
 
-	if (isset($_POST['op']) && $_POST['op'] == 'selplayer') {
-	$op = 'selplayer';
-	}
+    if (isset($_POST['op']) && $_POST['op'] == 'selplayer') {
+        $op = 'selplayer';
+    }
 
-		if (!isset($op)) {
-		$op = '';
-		}
+        if (!isset($op)) {
+            $op = '';
+        }
 
-	switch ($op) {
+    switch ($op) {
 
-		case 'selplayer':
-		selplayer();
-		break;
-	}
+        case 'selplayer':
+        selplayer();
+        break;
+    }
 
-	include_once XOOPS_ROOT_PATH.'/footer.php';
-
-?>
+    include_once XOOPS_ROOT_PATH.'/footer.php';

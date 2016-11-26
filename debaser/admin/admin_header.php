@@ -25,16 +25,15 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	include '../../../include/cp_header.php';
-	include_once '../../../class/module.textsanitizer.php';
+    include __DIR__ . '/../../../include/cp_header.php';
+    include_once __DIR__ . '/../../../class/module.textsanitizer.php';
 
-	$myts = &MyTextSanitizer::getInstance();
+    $myts =  MyTextSanitizer::getInstance();
 
-	$imagearray = array(
-	'editimg' => "<img src='../images/edit.gif' alt='"._EDIT."' align='middle'>",
-	'deleteimg' => "<img src='../images/delete.gif' alt='"._DELETE."' align='middle'>",
-	'online' => "<img src='../images/on.gif' alt='"._AM_DEBASER_ONLINE."' align='middle'>",
-	'offline' => "<img src='../images/off.gif' alt='"._AM_DEBASER_OFFLINE."' align='middle'>",
-	'approved' => "<img src='../images/play.gif' alt='"._AM_DEBASER_PLAY."' align='middle'>"
-	);
-?>
+    $imagearray = array(
+    'editimg' => "<img src='../images/edit.gif' alt='"._EDIT."' align='middle'>",
+    'deleteimg' => "<img src='../images/delete.gif' alt='"._DELETE."' align='middle'>",
+    'online' => "<img src='../images/on.gif' alt='"._AM_DEBASER_ONLINE."' align='middle'>",
+    'offline' => "<img src='../images/off.gif' alt='"._AM_DEBASER_OFFLINE."' align='middle'>",
+    'approved' => "<img src='../images/play.gif' alt='"._AM_DEBASER_PLAY."' align='middle'>"
+    );

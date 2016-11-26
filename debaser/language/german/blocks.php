@@ -25,20 +25,18 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-define("_MB_DEBASER_BLOCLATE","Anzeigen: ");
-define("_MB_DEBASER_SONGS","Dateien");
-define("_MB_DEBASER_ALBUM","Album:");
-define("_MB_DEBASER_YEAR","Jahr:");
-define("_MB_DEBASER_COMMENT","Zusatzinfo:");
-define("_MB_DEBASER_TRACK","Track:");
-define("_MB_DEBASER_GENRE","Kategorie:");
-define("_MB_DEBASER_LENGTH","L&auml;nge:");
-define("_MB_DEBASER_BITRATE","Bitrate:");
-define("_MB_DEBASER_FREQUENCY","Frequenz:");
-define("_MB_DEBASER_PLAY","Play");
-define("_MB_DEBASER_HEIGHT","H&ouml;he: ");
-define("_MB_DEBASER_WIDTH","Breite: ");
+define('_MB_DEBASER_BLOCLATE', 'Anzeigen: ');
+define('_MB_DEBASER_SONGS', 'Dateien');
+define('_MB_DEBASER_ALBUM', 'Album:');
+define('_MB_DEBASER_YEAR', 'Jahr:');
+define('_MB_DEBASER_COMMENT', 'Zusatzinfo:');
+define('_MB_DEBASER_TRACK', 'Track:');
+define('_MB_DEBASER_GENRE', 'Kategorie:');
+define('_MB_DEBASER_LENGTH', 'L&auml;nge:');
+define('_MB_DEBASER_BITRATE', 'Bitrate:');
+define('_MB_DEBASER_FREQUENCY', 'Frequenz:');
+define('_MB_DEBASER_PLAY', 'Play');
+define('_MB_DEBASER_HEIGHT', 'H&ouml;he: ');
+define('_MB_DEBASER_WIDTH', 'Breite: ');
 
-define("_MB_DEBASERRAD_CHO","Senderauswahl");
-
-?>
+define('_MB_DEBASERRAD_CHO', 'Senderauswahl');

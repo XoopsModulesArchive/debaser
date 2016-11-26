@@ -25,73 +25,72 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	function b_debaser_views_show($options) {
-	
-	global $xoopsDB, $xoopsUser;
+    function b_debaser_views_show($options)
+    {
+        global $xoopsDB, $xoopsUser;
 
-	$module_handler =& xoops_gethandler('module');
-	$module =& $module_handler->getByDirname('debaser');
-	$config_handler =& xoops_gethandler('config');
-	$moduleConfig =& $config_handler->getConfigsByCat(0, $module->getVar('mid'));
+        $moduleHandler = xoops_getHandler('module');
+        $module = $moduleHandler->getByDirname('debaser');
+        $configHandler = xoops_getHandler('config');
+        $moduleConfig =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
 
-	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
-	$module_id = $module->getVar('mid');
-	$gperm_handler = &xoops_gethandler('groupperm');
+        $groups = is_object($xoopsUser) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+        $module_id = $module->getVar('mid');
+        $gpermHandler =  xoops_getHandler('groupperm');
 
-	$myts =& MyTextSanitizer::getInstance();
-	$block = array();
-	$sql = "SELECT xfid, title, artist, album, year, addinfo, track, genre, length, bitrate, frequence FROM ".$xoopsDB->prefix('debaser_files')." WHERE approved = 1 AND views > 0 ORDER BY views DESC LIMIT ".$options[0]."";
-	$result = $xoopsDB->query($sql);
+        $myts = MyTextSanitizer::getInstance();
+        $block = array();
+        $sql = 'SELECT xfid, title, artist, album, year, addinfo, track, genre, length, bitrate, frequence FROM '
+           . $xoopsDB->prefix('debaser_files') . ' WHERE approved = 1 AND views > 0 ORDER BY views DESC LIMIT '
+           . $options[0] . '';
+        $result = $xoopsDB->query($sql);
 
-		while ( $myrow = $xoopsDB->fetchArray($result) ) {
-		if ($moduleConfig['usefileperm'] == 1) {
-		if ($gperm_handler->checkRight('DebaserFilePerm', $myrow['xfid'] , $groups, $module_id)) {
-		$views = array();
-		$views['id'] = $myts->makeTboxData4Show($myrow['xfid']);
-		$views['title'] = $myts->makeTboxData4Show($myrow['title']);
-		$views['artist'] = $myts->makeTboxData4Show($myrow['artist']);
-		if ($moduleConfig['usetooltips'] == 1) {		
-		$views['album'] = $myts->makeTboxData4Show($myrow['album']);
-		$views['year'] = $myts->makeTboxData4Show($myrow['year']);
-		$views['addinfo'] = $myts->makeTboxData4Show($myrow['addinfo']);
-		$views['track'] = $myts->makeTboxData4Show($myrow['track']);
-		$views['genre'] = $myts->makeTboxData4Show($myrow['genre']);
-		$views['length'] = $myts->makeTboxData4Show($myrow['length']);
-		$views['bitrate'] = $myts->makeTboxData4Show($myrow['bitrate']);
-		$views['frequence'] = $myts->makeTboxData4Show($myrow['frequence']);
-		$views['usetooltips'] = true;
-		}
-}
-}
-else {
-		$views = array();
-		$views['id'] = $myts->makeTboxData4Show($myrow['xfid']);
-		$views['title'] = $myts->makeTboxData4Show($myrow['title']);
-		$views['artist'] = $myts->makeTboxData4Show($myrow['artist']);
-		if ($moduleConfig['usetooltips'] == 1) {
-		$views['album'] = $myts->makeTboxData4Show($myrow['album']);
-		$views['year'] = $myts->makeTboxData4Show($myrow['year']);
-		$views['addinfo'] = $myts->makeTboxData4Show($myrow['addinfo']);
-		$views['track'] = $myts->makeTboxData4Show($myrow['track']);
-		$views['genre'] = $myts->makeTboxData4Show($myrow['genre']);
-		$views['length'] = $myts->makeTboxData4Show($myrow['length']);
-		$views['bitrate'] = $myts->makeTboxData4Show($myrow['bitrate']);
-		$views['frequence'] = $myts->makeTboxData4Show($myrow['frequence']);
-		$views['usetooltips'] = true;
-		}
-}
+        while ($myrow = $xoopsDB->fetchArray($result)) {
+            if ($moduleConfig['usefileperm'] == 1) {
+                if ($gpermHandler->checkRight('DebaserFilePerm', $myrow['xfid'], $groups, $module_id)) {
+                    $views = array();
+                    $views['id'] = $myts->makeTboxData4Show($myrow['xfid']);
+                    $views['title'] = $myts->makeTboxData4Show($myrow['title']);
+                    $views['artist'] = $myts->makeTboxData4Show($myrow['artist']);
+                    if ($moduleConfig['usetooltips'] == 1) {
+                        $views['album'] = $myts->makeTboxData4Show($myrow['album']);
+                        $views['year'] = $myts->makeTboxData4Show($myrow['year']);
+                        $views['addinfo'] = $myts->makeTboxData4Show($myrow['addinfo']);
+                        $views['track'] = $myts->makeTboxData4Show($myrow['track']);
+                        $views['genre'] = $myts->makeTboxData4Show($myrow['genre']);
+                        $views['length'] = $myts->makeTboxData4Show($myrow['length']);
+                        $views['bitrate'] = $myts->makeTboxData4Show($myrow['bitrate']);
+                        $views['frequence'] = $myts->makeTboxData4Show($myrow['frequence']);
+                        $views['usetooltips'] = true;
+                    }
+                }
+            } else {
+                $views = array();
+                $views['id'] = $myts->makeTboxData4Show($myrow['xfid']);
+                $views['title'] = $myts->makeTboxData4Show($myrow['title']);
+                $views['artist'] = $myts->makeTboxData4Show($myrow['artist']);
+                if ($moduleConfig['usetooltips'] == 1) {
+                    $views['album'] = $myts->makeTboxData4Show($myrow['album']);
+                    $views['year'] = $myts->makeTboxData4Show($myrow['year']);
+                    $views['addinfo'] = $myts->makeTboxData4Show($myrow['addinfo']);
+                    $views['track'] = $myts->makeTboxData4Show($myrow['track']);
+                    $views['genre'] = $myts->makeTboxData4Show($myrow['genre']);
+                    $views['length'] = $myts->makeTboxData4Show($myrow['length']);
+                    $views['bitrate'] = $myts->makeTboxData4Show($myrow['bitrate']);
+                    $views['frequence'] = $myts->makeTboxData4Show($myrow['frequence']);
+                    $views['usetooltips'] = true;
+                }
+            }
 
-		$block['debaser_filesviews'][] = $views;
-	}
+            $block['debaser_filesviews'][] = $views;
+        }
 
-	return $block;
-}
+        return $block;
+    }
 
-	function b_debaser_views_edit($options) {
+    function b_debaser_views_edit($options)
+    {
+        $form = '' . _MB_DEBASER_BLOCLATE . "<input type='text' size='3' maxlength='2' name='options[]' value='" . $options[0] . "' />&nbsp;" . _MB_DEBASER_SONGS . '';
 
-	$form = ""._MB_DEBASER_BLOCLATE."<input type='text' size='3' maxlength='2' name='options[]' value='".$options[0]."' />&nbsp;"._MB_DEBASER_SONGS."";
-
-	return $form;
-	}
-
-?>
+        return $form;
+    }

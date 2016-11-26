@@ -25,62 +25,58 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-	function b_debaser_displatest_show($options) {
+    function b_debaser_displatest_show($options)
+    {
+        global $xoopsDB, $xoopsUser;
 
-	global $xoopsDB, $xoopsUser;
+        $moduleHandler = xoops_getHandler('module');
+        $module = $moduleHandler->getByDirname('debaser');
+        $configHandler = xoops_getHandler('config');
+        $moduleConfig =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
 
-	$module_handler =& xoops_gethandler('module');
-	$module =& $module_handler->getByDirname('debaser');
-	$config_handler =& xoops_gethandler('config');
-	$moduleConfig =& $config_handler->getConfigsByCat(0, $module->getVar('mid'));
+        $groups = is_object($xoopsUser) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+        $module_id = $module->getVar('mid');
+        $gpermHandler =  xoops_getHandler('groupperm');
 
-	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
-	$module_id = $module->getVar('mid');
-	$gperm_handler = &xoops_gethandler('groupperm');
+        $myts = MyTextSanitizer::getInstance();
+        $block = array();
 
-	$myts =& MyTextSanitizer::getInstance();
-	$block = array();
+        if (isset($_POST['playme']) && $_POST['playme'] == 'playlatest') {
+            $sql = 'SELECT d.xfid, d.filename, d.link, d.approved, d.fileext, e.mime_ext, e.mime_preselect, f.xpid, f.html_code FROM ' . $xoopsDB->prefix('debaser_files') . ' d, '
+               . $xoopsDB->prefix('debaser_mimetypes') . ' e, '
+               . $xoopsDB->prefix('debaser_player') . ' f WHERE d.approved = 1 AND d.fileext = e.mime_ext AND e.mime_preselect = f.xpid ORDER BY d.xfid DESC LIMIT 1';
+            $result = $xoopsDB->query($sql);
 
-		if (isset($_POST['playme']) && $_POST['playme'] == 'playlatest') {
+            while ($myrow = $xoopsDB->fetchArray($result)) {
+                $disp_latest = array();
+                $disp_latest['id'] = $myts->makeTboxData4Show($myrow['xfid']);
 
-		$sql = "SELECT d.xfid, d.filename, d.link, d.approved, d.fileext, e.mime_ext, e.mime_preselect, f.xpid, f.html_code FROM ".$xoopsDB->prefix('debaser_files')." d, ".$xoopsDB->prefix('debaser_mimetypes')." e, ".$xoopsDB->prefix('debaser_player')." f WHERE d.approved = 1 AND d.fileext = e.mime_ext AND e.mime_preselect = f.xpid ORDER BY d.xfid DESC LIMIT 1";
-	$result = $xoopsDB->query($sql);
+                if ($myrow['link'] != '') {
+                    $player1 = str_replace('<@mp3file@>', $myrow['link'], $myrow['html_code']);
+                } else {
+                    $player1 = str_replace('<@mp3file@>', XOOPS_URL.'/modules/debaser/upload/'.$myrow['filename'], $myrow['html_code']);
+                }
 
-			while ( $myrow = $xoopsDB->fetchArray($result) ) {
-			$disp_latest = array();
-			$disp_latest['id'] = $myts->makeTboxData4Show($myrow['xfid']);
+                $player2 = str_replace('<@height@>', $options[0], $player1);
+                $player3 = str_replace('<@width@>', $options[1], $player2);
+                $player = str_replace('<@autostart@>', 'true', $player3);
 
-				if ($myrow['link'] != '') {
-				$player1 = str_replace('<@mp3file@>',$myrow['link'],$myrow['html_code']);
-				}
-				else {
-				$player1 = str_replace('<@mp3file@>',XOOPS_URL.'/modules/debaser/upload/'.$myrow['filename'],$myrow['html_code']);
-				}
+                $disp_latest['player'] = $player;
+            }
 
-			$player2 = str_replace('<@height@>',$options[0],$player1);
-			$player3 = str_replace('<@width@>',$options[1],$player2);
-			$player = str_replace('<@autostart@>','true',$player3);
+            $block['display_latest'][] = $disp_latest;
+        } else {
+            $emptyvar = '';
+            $disp_latest['donotdeletethistag'] = $emptyvar;
+            $block['display_latest'][] = $disp_latest;
+        }
+        return $block;
+    }
 
-			$disp_latest['player'] = $player;
-			}
+    function b_debaser_displatest_edit($options)
+    {
+        $form = '' . _MB_DEBASER_HEIGHT . "<input type='text' size='3' maxlength='3' name='options[]' value='" . $options[0] . "' /><br />
+	" . _MB_DEBASER_WIDTH . "<input type='text' size='3' maxlength='3' name='options[]' value='" .$options[1] . "' />";
 
-		$block['display_latest'][] = $disp_latest;
-		}
-		else {
-		$emptyvar = '';
-		$disp_latest['donotdeletethistag'] = $emptyvar;
-		$block['display_latest'][] = $disp_latest;
-		}
-		return $block;
-
-	}
-
-	function b_debaser_displatest_edit($options) {
-
-	$form = ""._MB_DEBASER_HEIGHT."<input type='text' size='3' maxlength='3' name='options[]' value='".$options[0]."' /><br />
-	"._MB_DEBASER_WIDTH."<input type='text' size='3' maxlength='3' name='options[]' value='".$options[1]."' />";
-
-	return $form;
-	}
-
-?>
+        return $form;
+    }

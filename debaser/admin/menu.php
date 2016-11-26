@@ -27,23 +27,22 @@
 global $xoopsConfig;
 
 $adminmenu[1]['title'] = _MI_DEBASER_ADMIN;
-$adminmenu[1]['link'] = "admin/index.php";
+$adminmenu[1]['link'] = 'admin/index.php';
 $adminmenu[2]['title'] = _MI_DEBASER_EDITGENRES;
-$adminmenu[2]['link'] = "admin/category.php";
+$adminmenu[2]['link'] = 'admin/category.php';
 $adminmenu[3]['title'] = _MI_DEBASER_EDITPLAYERS;
-$adminmenu[3]['link'] = "admin/index.php?op=playermanager";
+$adminmenu[3]['link'] = 'admin/index.php?op=playermanager';
 $adminmenu[4]['title'] = _MI_DEBASER_SINGLEUP;
-$adminmenu[4]['link'] = "admin/upload.php?op=singleupload";
+$adminmenu[4]['link'] = 'admin/upload.php?op=singleupload';
 $adminmenu[5]['title'] = _MI_DEBASER_BATCH;
-$adminmenu[5]['link'] = "admin/upload.php?op=batchadd";
+$adminmenu[5]['link'] = 'admin/upload.php?op=batchadd';
 $adminmenu[6]['title'] = _MI_DEBASER_MAPPROVE;
-$adminmenu[6]['link'] = "admin/index.php?op=approve";
+$adminmenu[6]['link'] = 'admin/index.php?op=approve';
 $adminmenu[7]['title'] = _MI_DEBASERRAD_ADMIN;
-$adminmenu[7]['link'] = "admin/radioindex.php";
+$adminmenu[7]['link'] = 'admin/radioindex.php';
 $adminmenu[8]['title'] = _MI_DEBASER_FILETYPES;
-$adminmenu[8]['link'] = "admin/mimetypes.php";
+$adminmenu[8]['link'] = 'admin/mimetypes.php';
 $adminmenu[9]['title'] = _MI_DEBASER_PERMISSIONS;
-$adminmenu[9]['link'] = "admin/permissions.php";
+$adminmenu[9]['link'] = 'admin/permissions.php';
 $adminmenu[10]['title'] = _MI_DEBASER_HELP;
-$adminmenu[10]['link'] = "language/".$xoopsConfig['language']."/help.php ";
-?>
+$adminmenu[10]['link'] = 'language/' . $xoopsConfig['language'] . '/help.php ';

@@ -26,81 +26,77 @@
 //  ------------------------------------------------------------------------ //
 
 
-	function b_debaser_dispfeatured_show($options) {
+    function b_debaser_dispfeatured_show($options)
+    {
+        global $xoopsDB, $xoopsUser;
 
-	global $xoopsDB, $xoopsUser;
+        $moduleHandler = xoops_getHandler('module');
+        $module = $moduleHandler->getByDirname('debaser');
+        $configHandler = xoops_getHandler('config');
+        $moduleConfig =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
 
-	$module_handler =& xoops_gethandler('module');
-	$module =& $module_handler->getByDirname('debaser');
-	$config_handler =& xoops_gethandler('config');
-	$moduleConfig =& $config_handler->getConfigsByCat(0, $module->getVar('mid'));
+        $groups = is_object($xoopsUser) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+        $module_id = $module->getVar('mid');
+        $gpermHandler =  xoops_getHandler('groupperm');
 
-	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
-	$module_id = $module->getVar('mid');
-	$gperm_handler = &xoops_gethandler('groupperm');
+        $myts = MyTextSanitizer::getInstance();
+        $block = array();
 
-	$myts =& MyTextSanitizer::getInstance();
-	$block = array();
+        if (isset($_POST['playme']) && $_POST['playme'] == 'playfeatured') {
+            $sql = 'SELECT d.xfid, d.filename, d.link, d.approved, d.fileext, e.mime_ext, e.mime_preselect, f.xpid, f.html_code FROM ' . $xoopsDB->prefix('debaser_files') . ' d, '
+               . $xoopsDB->prefix('debaser_mimetypes') . ' e, '
+               . $xoopsDB->prefix('debaser_player') . ' f WHERE d.approved = 1 AND d.fileext = e.mime_ext AND e.mime_preselect = f.xpid AND d.xfid = '
+               . $options[2] . '';
+            $result = $xoopsDB->query($sql);
 
-		if (isset($_POST['playme']) && $_POST['playme'] == 'playfeatured') {
+            while ($myrow = $xoopsDB->fetchArray($result)) {
+                $disp_featured = array();
+                $disp_featured['id'] = $myts->makeTboxData4Show($myrow['xfid']);
 
-		$sql = "SELECT d.xfid, d.filename, d.link, d.approved, d.fileext, e.mime_ext, e.mime_preselect, f.xpid, f.html_code FROM ".$xoopsDB->prefix('debaser_files')." d, ".$xoopsDB->prefix('debaser_mimetypes')." e, ".$xoopsDB->prefix('debaser_player')." f WHERE d.approved = 1 AND d.fileext = e.mime_ext AND e.mime_preselect = f.xpid AND d.xfid = ".$options[2]."";
-	$result = $xoopsDB->query($sql);
+                if ($myrow['link'] != '') {
+                    $player1 = str_replace('<@mp3file@>', $myrow['link'], $myrow['html_code']);
+                } else {
+                    $player1 = str_replace('<@mp3file@>', XOOPS_URL.'/modules/debaser/upload/'.$myrow['filename'], $myrow['html_code']);
+                }
 
-			while ( $myrow = $xoopsDB->fetchArray($result) ) {
-			$disp_featured = array();
-			$disp_featured['id'] = $myts->makeTboxData4Show($myrow['xfid']);
+                $player2 = str_replace('<@height@>', $options[0], $player1);
+                $player3 = str_replace('<@width@>', $options[1], $player2);
+                $player = str_replace('<@autostart@>', 'true', $player3);
 
-				if ($myrow['link'] != '') {
-				$player1 = str_replace('<@mp3file@>',$myrow['link'],$myrow['html_code']);
-				}
-				else {
-				$player1 = str_replace('<@mp3file@>', XOOPS_URL.'/modules/debaser/upload/'.$myrow['filename'], $myrow['html_code']);
-				}
+                $disp_featured['player'] = $player;
+            }
 
-			$player2 = str_replace('<@height@>',$options[0],$player1);
-			$player3 = str_replace('<@width@>',$options[1],$player2);
-			$player = str_replace('<@autostart@>','true',$player3);
+            $block['display_featured'][] = $disp_featured;
+        } else {
+            $emptyvar = '';
+            $disp_featured['donotdeletethistag'] = $emptyvar;
 
-			$disp_featured['player'] = $player;
-			}
+            $block['display_featured'][] = $disp_featured;
+        }
+        
+        return $block;
+    }
 
-		$block['display_featured'][] = $disp_featured;
+    function b_debaser_dispfeatured_edit($options)
+    {
+        global $xoopsDB;
 
-		}
-		else {
-		$emptyvar = '';
-		$disp_featured['donotdeletethistag'] = $emptyvar;
-
-		$block['display_featured'][] = $disp_featured;
-
-		}
-		
-		return $block;
-		
-	}
-
-	function b_debaser_dispfeatured_edit($options) {
-	global $xoopsDB;
-
-	$form = "<p>"._MB_DEBASER_HEIGHT."<input type='text' size='3' maxlength='3' name='options[]' value='".$options[0]."' /></p>
-	<p>"._MB_DEBASER_WIDTH."<input type='text' size='3' maxlength='3' name='options[]' value='".$options[1]."' /></p>
+        $form = '<p>' . _MB_DEBASER_HEIGHT . "<input type='text' size='3' maxlength='3' name='options[]' value='" . $options[0] . "' /></p>
+	<p>" . _MB_DEBASER_WIDTH . "<input type='text' size='3' maxlength='3' name='options[]' value='" .$options[1] . "' /></p>
 	<p><select name='options[]'>";
-	
-	$featuresql = "SELECT xfid, title FROM ".$xoopsDB->prefix('debaser_files')." WHERE approved = 1";
-	$featureresult = $xoopsDB->query($featuresql);
+    
+        $featuresql = 'SELECT xfid, title FROM ' . $xoopsDB->prefix('debaser_files') . ' WHERE approved = 1';
+        $featureresult = $xoopsDB->query($featuresql);
 
-			while ( $myrow = $xoopsDB->fetchArray($featureresult) ) {
-			$form .= "<option value='".$myrow['xfid']."'";
-				if ($options[2] == $myrow['xfid']) {
-				$form .= " selected='selected'";
-    } 
-    $form .= ">".$myrow['title']."</option>";
-			}
-			
-	$form .= "</select></p>";
-	
-	return $form;
-	}
-
-?>
+        while ($myrow = $xoopsDB->fetchArray($featureresult)) {
+            $form .= "<option value='".$myrow['xfid']."'";
+            if ($options[2] == $myrow['xfid']) {
+                $form .= " selected='selected'";
+            }
+            $form .= '>' . $myrow['title'] . '</option>';
+        }
+            
+        $form .= '</select></p>';
+    
+        return $form;
+    }

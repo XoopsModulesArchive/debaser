@@ -1,9 +1,9 @@
 <?php
-include '../../../../mainfile.php';
+include __DIR__ . '/../../../../mainfile.php';
 
-include '../../../../include/cp_functions.php';
+include __DIR__ . '/../../../../include/cp_functions.php';
 
-	xoops_cp_header();
+    xoops_cp_header();
 
 echo '
 <table><tr><td>
@@ -127,6 +127,4 @@ Enjoy!
 frankblack  
 </td></tr></table>';
 
-	xoops_cp_footer();
-
-?>
+    xoops_cp_footer();

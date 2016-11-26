@@ -27,34 +27,33 @@
 
 function debaser_notify_iteminfo($category, $item_id)
 {
-	global $xoopsModule, $xoopsModuleConfig, $xoopsConfig;
+    global $xoopsModule, $xoopsModuleConfig, $xoopsConfig;
 
-	if (empty($xoopsModule) || $xoopsModule->getVar('dirname') != 'debaser') {	
-		$module_handler =& xoops_gethandler('module');
-		$module =& $module_handler->getByDirname('debaser');
-		$config_handler =& xoops_gethandler('config');
-		$config =& $config_handler->getConfigsByCat(0,$module->getVar('mid'));
-	} else {
-		$module =& $xoopsModule;
-		$config =& $xoopsModuleConfig;
-	}
+    if (empty($xoopsModule) || $xoopsModule->getVar('dirname') != 'debaser') {
+        $moduleHandler = xoops_getHandler('module');
+        $module = $moduleHandler->getByDirname('debaser');
+        $configHandler = xoops_getHandler('config');
+        $config =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
+    } else {
+        $module =& $xoopsModule;
+        $config =& $xoopsModuleConfig;
+    }
 
-	if ($category=='global') {
-		$item['name'] = '';
-		$item['url'] = '';
-		return $item;
-	}
+    if ($category=='global') {
+        $item['name'] = '';
+        $item['url'] = '';
+        return $item;
+    }
 
-	global $xoopsDB;
+    global $xoopsDB;
 
-	if ($category=='song') {
-		// Assume we have a valid story id
-		$sql = 'SELECT title FROM '.$xoopsDB->prefix('debaser_files') . ' WHERE xfid = ' . $item_id;
-		$result = $xoopsDB->query($sql); // TODO: error check
-		$result_array = $xoopsDB->fetchArray($result);
-		$item['name'] = $result_array['title'];
-		$item['url'] = XOOPS_URL . '/modules/' . $module->getVar('dirname') . '/singlefile.php?id=' . $item_id;
-		return $item;
-	}
+    if ($category=='song') {
+        // Assume we have a valid story id
+        $sql = 'SELECT title FROM '.$xoopsDB->prefix('debaser_files') . ' WHERE xfid = ' . $item_id;
+        $result = $xoopsDB->query($sql); // TODO: error check
+        $result_array = $xoopsDB->fetchArray($result);
+        $item['name'] = $result_array['title'];
+        $item['url'] = XOOPS_URL . '/modules/' . $module->getVar('dirname') . '/singlefile.php?id=' . $item_id;
+        return $item;
+    }
 }
-?>
