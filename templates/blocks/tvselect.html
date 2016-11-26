@@ -1,0 +1,9 @@
+<form style="margin:0px; padding:2px;" name="tvlist" id="tvlist" method="post" action="tv_block.php">
+<select id="tvselect" name="tvselect">
+<option><{$smarty.const._MB_DEBASERTV_CHO}></option>
+<{foreach item=tvlist from=$block.tvlist}>	
+<{$tvlist.options}>
+<{/foreach}>
+</select>
+<div id="tvlistresponse" style="padding-top:5px"></div>
+</form>

@@ -1,5 +1,4 @@
 <?php
-// $Id: language/english/modinfo.php,v 0.10 2004/04/24 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,179 +24,199 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-define('_MI_DEBASER_NAME', 'debaser');
-
-//language defines for template manager
-define('_MI_DEBASER_UPLOADER', 'debaser Uploader');
-define('_MI_DEBASER_MPEGPLAYER', 'Player in Popup-Window');
-define('_MI_DEBASER_INDEX', 'debaser main page');
-define('_MI_DEBASER_GENRES', 'Displays the categories for debaser');
-define('_MI_DEBASER_AMEDITGENRE', 'ADMIN: Edit category');
-define('_MI_DEBASER_AMGENREMANAGE', 'ADMIN: category manager');
-define('_MI_DEBASER_AMPLAYMANAGE', 'ADMIN: player manager');
-define('_MI_DEBASER_AMSHOWMPEGS', 'ADMIN: Displays files grouped by genre');
-define('_MI_DEBASER_AMEDITPLAY', 'ADMIN: Edit players');
-define('_MI_DEBASER_EDITMPEGS', 'ADMIN: Edit files');
-define('_MI_DEBASER_APPROVE', '<strong>ADMIN:</strong> Approve files');
-define('_MI_DEBASER_SINGLEFILE', 'Shows the files');
-
-define('_MI_DEBASER_DESC', 'Mediaplayer for Xoops 2.x');
-
-//language define for submenu
-define('_MI_DEBASER_SUBMIT', 'Submit');
-define('_MI_DEBASER_MYDEBASER', 'Select player');
-
-// defines for blocks
-define('_MI_DEBASER_LATEST', 'Latest files');
-define('_MI_DEBASER_LATEST_DESC', 'Shows latest files');
-define('_MI_DEBASER_RATED', 'Top rated files');
-define('_MI_DEBASER_RATED_DESC', 'Shows top rated files');
-define('_MI_DEBASER_HITS', 'Top Downloads');
-define('_MI_DEBASER_HITS_DESC', 'Shows the top downloaded files');
-define('_MI_DEBASER_VIEWS', 'Top Views');
-define('_MI_DEBASER_VIEWS_DESC', 'Shows the top visited files');
-define('_MI_DEBASER_DISPLATEST', 'Play latest file');
-define('_MI_DEBASER_DISPLATEST_DESC', 'Plays the latest file inside the block');
-define('_MI_DEBASER_DISPRATED', 'Play best rated file');
-define('_MI_DEBASER_DISPRATED_DESC', 'Plays the best rated file inside the block');
-define('_MI_DEBASER_DISPFEATURED', 'Play featured file');
-define('_MI_DEBASER_DISPFEATURED_DESC', 'Plays a featured file inside the block');
-define('_MI_DEBASER_DISPDOWN', 'Play top downloaded file');
-define('_MI_DEBASER_DISPDOWN_DESC', 'Plays the top downloaded file inside the block');
-define('_MI_DEBASER_DISPVIEWED', 'Play most viewed file');
-define('_MI_DEBASER_DISPVIEWED_DESC', 'Plays the most viewed file inside the block');
+define('_MI_DEBASER_DESC','Multimedia player for Xoops 2.x');
+define('_MI_DEBASER_SUBMITFILE','Submit file');
+define('_MI_DEBASER_SUBMITLINK','Submit link');
+define('_MI_DEBASER_SUBMITLINKDSC','The groups allowed to submit links');
+define('_MI_DEBASER_LATEST','Current files');
+define('_MI_DEBASER_LATEST_DESC','Shows the newest files');
+define('_MI_DEBASER_RATED','Top rated files');
+define('_MI_DEBASER_RATED_DESC','Shows the top rated files');
+define('_MI_DEBASER_HITS','Top downloads');
+define('_MI_DEBASER_HITS_DESC','Shows the top downloaded files');
+define('_MI_DEBASER_VIEWS','Top views');
+define('_MI_DEBASER_VIEWS_DESC','Shows the most viewed files');
+define('_MI_DEBASER_DISPLATEST','Play newest file');
+define('_MI_DEBASER_DISPRATED','Play best rated file');
+define('_MI_DEBASER_DISPFEATURED','Play featured file');
+define('_MI_DEBASER_DISPDOWN','Play top download file');
+define('_MI_DEBASER_DISPVIEWED','Play the most viewed file');
 
 // preferences constants
-define('_MI_DEBASER_DOWNLOAD', '1. Download');
-define('_MI_DEBASER_ALLOWDOWN', '<span style="color:#ff0000;"><em>Allow Downloads</em></span>');
-define('_MI_DEBASER_PLAYLIST', '2. Playlists');
-define('_MI_DEBASER_PLAYLISTDSC', '<span style="color:#ff0000;"><em>Allow playlists (NOT YET)</em></span>');
-define('_MI_DEBASER_VIEWLIMIT', '3. Files per page');
-define('_MI_DEBASER_VIEWLIMITDESC', '<span style="color:#ff0000;"><em>Files to be displayed per page</em></span>');
-define('_MI_DEBASER_UPLOAD', '4. Upload permission');
-define('_MI_DEBASER_UPLOADDESC', '<span style="color:#ff0000;"><em>Groups that are allowed to submit files</em></span>');
-define('_MI_DEBASER_ANONPOST', '5. Allow anonymous to submit files');
-define('_MI_DEBASER_ANONPOSTDESC', '');
-define('_MI_DEBASER_AUTOFILEAPPROVE', '6. Autoapprove single file uploads?');
-define('_MI_DEBASER_AUTOFILEAPPROVEDSC', '<span style="color:#ff0000;"><em>Single file uploads will approved at once</em></span>');
-define('_MI_DEBASER_AUTOLINKAPPROVE', '7. Autoapprove link submissions?');
-define('_MI_DEBASER_AUTOLINKAPPROVEDSC', '<span style="color:#ff0000;"><em>Link submissions will approved at once</em></span>');
-define('_MI_DEBASER_AUTOBATAPPROVE', '8. Autoapprove batchloads?');
-define('_MI_DEBASER_AUTOBATAPPROVEDSC', '<span style="color:#ff0000;"><em>Batchloads will approved at once</em></span>');
-define('_MI_DEBASER_MAXSIZE', '9. Max. Single uploadsize in bytes');
-define('_MI_DEBASER_MAXSIZEDSC', '<span style="color:#ff0000;"><em>The default value is taken from php.ini</em></span>');
-define('_MI_DEBASER_UPSEL', '10. Kind of data submission');
-define('_MI_DEBASER_UPSELDSC', '<span style="color:#ff0000;"><em>Here you can define if files, links to files or both can be submitted</em></span>');
-define('_MI_DEBASER_UPFILE', 'Files');
-define('_MI_DEBASER_UPLINK', 'Links');
-define('_MI_DEBASER_UPBOTH', 'Both');
-define('_MI_DEBASER_GUESTVOTE', '11. Guest Rating');
-define('_MI_DEBASER_GUESTVOTEDSC', '<span style="color:#ff0000;"><em>Here you can define if guests are allowed to vote for files</em></span>');
-define('_MI_DEBASER_AUTOGENRESINGLE', '12. Automatic categories for single uploads?');
-define('_MI_DEBASER_AUTOGENRESINGLEDSC', '<span style="color:#ff0000;"><em>Here you can define if categories will be created from the file-information of the file or if you want to make own categories</em></span>');
-define('_MI_DEBASER_AUTOGENREBATCH', '13. Automatic categories for batchloads?');
-define('_MI_DEBASER_AUTOGENREBATCHDSC', '<span style="color:#ff0000;"><em>Here you can define if categories will be created from the file-information of the file or if you want to make own categories</em></span>');
-define('_MI_DEBASER_CATEGORYIMG', '14. Upload directory for category images');
-define('_MI_DEBASER_USETHUMBS', '15. Thumbnails:');
-define('_MI_DEBASER_USETHUMBSDSC', '<span style="color:#ff0000;"><em>Supported file types: JPG, GIF, PNG.<br /><br />Downloads will use thumb nails for images. Set to \'No\' to use original image if the server does not support this option.</em></span>');
-define('_MI_DEBASER_SHOTWIDTH', '16. Maximum width of screenshot/thumbnails images');
-define('_MI_DEBASER_SHOTHEIGHT', '17. Maximum height of screenshot/thumbnails images');
-define('_MI_DEBASER_SHOTWIDTHDSC', '');
-define('_MI_DEBASER_QUALITY', '18. Thumb Nail Quality: ');
-define('_MI_DEBASER_IMGUPDATE', '19. Update Thumbnails?');
-define('_MI_DEBASER_IMGUPDATEDSC', '<span style="color:#ff0000;"><em>If selected Thumbnail images will be updated at each page render, otherwise the first thumbnail image will be used regardless.</em></span>');
-define('_MI_DEBASER_KEEPASPECT', '20. Keep Image Aspect Ratio?');
-define('_MI_DEBASER_KEEPASPECTDSC', '');
-define('_MI_DEBASER_USECATPERM', '21. Use permissions for categories?');
-define('_MI_DEBASER_USECATPERMDSC', '<span style="color:#ff0000;"><em>Here you can define if you want to have additional work by using a permission system for categories or not</em></span>');
-define('_MI_DEBASER_USEFILEPERM', '22. Use permissions for files?');
-define('_MI_DEBASER_USEFILEPERMDSC', '<span style="color:#ff0000;"><em>Here you can define if you want to have additional work by using a permission system for files or not</em></span>');
-define('_MI_DEBASER_PRESELECTPLAY', '23. Player preselection');
-define('_MI_DEBASER_PRESELECTPLAYDESC', "<span style='color:#ff0000;'><em>Here you can define which group uses pre-selected players. Guests will always use preselected players.</em></span>");
-define('_MI_DEBASER_SORTBY', '24. Sort the files on:');
-define('_MI_DEBASER_SORTBY_DSC', '<span style="color:#ff0000;"><em>Here you can define how to sort the files on the user side</em></span>');
-define('_MI_DEBASER_ORDERBY', '25. Order the files on:');
-define('_MI_DEBASER_ORDERBY_DSC', '<span style="color:#ff0000;"><em>Here you can define the order of the files on the user side</em></span>');
-define('_MI_DEBASER_CATSORTBY', '26. Sort the categories on:');
-define('_MI_DEBASER_CATSORTBY_DSC', "<span style='color:#ff0000;'><em>Here you can define how to sort the categories on the user side</em></span>");
-define('_MI_DEBASER_CATORDERBY', '27. Order the categories on:');
-define('_MI_DEBASER_CATORDERBY_DSC', "<span style='color:#ff0000;'><em>Here you can define the order of the categories on the user side</em></span>");
-define('_MI_DEBASER_USETOOLTIPS', '28. Use tooltips:');
-define('_MI_DEBASER_USETOOLTIPSDSC', "<span style='color:#ff0000;'><em>Here you can define if tooltips with additional info should be used for genre.php and blocks</em></span>");
-define('_MI_DEBASER_ID', 'ID');
-define('_MI_DEBASER_ARTIST', 'Artist');
-define('_MI_DEBASER_TITLE', 'Title');
-define('_MI_DEBASER_WEIGHT', 'Weight');
-define('_MI_DEBASER_CATEGORY', 'Categoryname');
+define('_MI_DEBASER_VIEWLIMIT','Files to be shown on the backend');
+define('_MI_DEBASER_VIEWLIMITDESC','Files to be shown per page on the backend');
+define('_MI_DEBASER_VIEWLIMITFRONT','Files to be shown on the frontend');
+define('_MI_DEBASER_VIEWLIMITFRONTDESC','Files to be shown per page on the frontend');
+define('_MI_DEBASER_MAXSIZE','Maximum upload size in bytes');
+define('_MI_DEBASER_MAXSIZEDSC','The preset value will be read from php.ini');
+define('_MI_DEBASER_GUESTVOTE','Guest rating');
+define('_MI_DEBASER_GUESTVOTEDSC','Set if guests are allowed to rate files');
+define('_MI_DEBASER_GUESTDOWNLOAD','Guest download');
+define('_MI_DEBASER_GUESTDOWNLOADDSC','Set if guests are allowed to download files');
+define('_MI_DEBASER_SHOTWIDTH', 'Maximum width of category images');
+define('_MI_DEBASER_SHOTHEIGHT', 'Maximum height of category images');
+define('_MI_DEBASER_CATIMAGEFSIZE','Maximum filesize of category images');
+define('_MI_DEBASER_SORTBY', 'Sort files by:');
+define('_MI_DEBASER_SORTBY_DSC', 'Determine how the files should be sorted by on the frontend');
+define('_MI_DEBASER_ORDERBY','Order of files:');
+define('_MI_DEBASER_ORDERBY_DSC','Determine the order of the displayed files');
+define('_MI_DEBASER_CATSORTBY', 'Sort categories by:');
+define('_MI_DEBASER_CATSORTBY_DSC','Determine how the categories should be sorted on the frontend');
+define('_MI_DEBASER_CATORDERBY','Order of categories:');
+define('_MI_DEBASER_CATORDERBY_DSC','Determine the order of the displayed categories');
+define('_MI_DEBASER_ID','ID');
+define('_MI_DEBASER_ARTIST','Artist');
+define('_MI_DEBASER_TITLE','Title');
+define('_MI_DEBASER_WEIGHT','Weight');
+define('_MI_DEBASER_CATEGORY','Category name');
 
 //defines for flyout menu
-define('_MI_DEBASER_ADMIN', 'Administration');
-define('_MI_DEBASER_EDITGENRES', 'Edit categories');
-define('_MI_DEBASER_EDITPLAYERS', 'Edit Players');
-define('_MI_DEBASER_SINGLEUP', 'Single Upload');
-define('_MI_DEBASER_BATCH', 'Batch load');
-define('_MI_DEBASER_MAPPROVE', 'Approve files');
-define('_MI_DEBASER_PERMISSIONS', 'Permissions');
-define('_MI_DEBASER_FILETYPES', 'Filetypes');
-define('_MI_DEBASERRAD_ADMIN', 'Radio Administration');
+define('_MI_DEBASER_ADMIN','Administration');
+define('_MI_DEBASER_EDITGENRES','Edit categories');
+define('_MI_DEBASER_EDITPLAYERS','Edit players');
+define('_MI_DEBASER_MAPPROVE','Approve files');
 
 //defines for notifications
-define('_MI_DEBASER_GLOBAL_NOTIFY', 'Global');
-define('_MI_DEBASER_GLOBAL_NOTIFYDSC', 'Global notifications.');
+define('_MI_DEBASER_GLOBAL_NOTIFY', 'General');
+define('_MI_DEBASER_GLOBAL_NOTIFYDSC', 'General notification options.');
 
 define('_MI_DEBASER_GENRE_NOTIFY', 'Category');
-define('_MI_DEBASER_GENRE_NOTIFYDSC', 'Notifications concerning categories.');
+define('_MI_DEBASER_GENRE_NOTIFYDSC', 'Notification options concerning categories.');
 
-define('_MI_DEBASER_GENRE_NEWGENRE_NOTIFY', 'New category');
-define('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYCAP', 'Notify upon new categories.');
-define('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYDSC', 'Notification upon new categories.');
-define('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: New category');
+define ('_MI_DEBASER_GENRE_NEWGENRE_NOTIFY', 'New category');
+define ('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYCAP', 'Notify on new categories.');
+define ('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYDSC', 'Notification on new categories.');
+define ('_MI_DEBASER_GENRE_NEWGENRE_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: New category');
 
-define('_MI_DEBASER_SONG_NOTIFY', 'Files');
-define('_MI_DEBASER_SONG_NOTIFYDSC', 'Notifications concerning files.');
+define ('_MI_DEBASER_SONG_NOTIFY', 'Files');
+define ('_MI_DEBASER_SONG_NOTIFYDSC', 'Notification options concerning files/links.');
 
-define('_MI_DEBASER_SONG_NEWSONG_NOTIFY', 'New file');
-define('_MI_DEBASER_SONG_NEWSONG_NOTIFYCAP', 'Notify upon new files.');
-define('_MI_DEBASER_SONG_NEWSONG_NOTIFYDSC', 'Notifications upon new files.');
-define('_MI_DEBASER_SONG_NEWSONG_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic Notification: New file');
+define ('_MI_DEBASER_SONG_NEWSONG_NOTIFY', 'New file/link');
+define ('_MI_DEBASER_SONG_NEWSONG_NOTIFYCAP', 'Notify on new files/links.');
+define ('_MI_DEBASER_SONG_NEWSONG_NOTIFYDSC', 'Notification on new files/links.');
+define ('_MI_DEBASER_SONG_NEWSONG_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: New file/link');
 
-define('_MI_DEBASER_SUBMIT_NOTIFY', 'Files');
-define('_MI_DEBASER_SUBMIT_NOTIFYDSC', 'Notifications concerning uploads.');
+define ('_MI_DEBASER_SUBMIT_NOTIFY', 'Files');
+define ('_MI_DEBASER_SUBMIT_NOTIFYDSC', 'Notification options concerning uploads.');
 
-define('_MI_DEBASER_NEWSUBMIT_NOTIFY', 'New upload');
-define('_MI_DEBASER_NEWSUBMIT_NOTIFYCAP', 'Notify upon new uploads.');
-define('_MI_DEBASER_NEWSUBMIT_NOTIFYDSC', 'Notification upon new uploads.');
-define('_MI_DEBASER_NEWSUBMIT_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic Notification: New upload');
+define ('_MI_DEBASER_NEWSUBMIT_NOTIFY', 'New upload');
+define ('_MI_DEBASER_NEWSUBMIT_NOTIFYCAP', 'Notify on new uploads.');
+define ('_MI_DEBASER_NEWSUBMIT_NOTIFYDSC', 'Notification on new uploads.');
+define ('_MI_DEBASER_NEWSUBMIT_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: New upload');
 
-define('_MI_DEBASER_MIMETYPESUBMIT_NOTIFY', 'Unknown mimetype');
-define('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYCAP', 'Notify upon unknown mimetypes.');
-define('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYDSC', 'Notification upon unknown mimetypes.');
-define('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic Notification: Unknown mimetype');
+define ('_MI_DEBASER_MIMETYPESUBMIT_NOTIFY', 'Unknown mimetype');
+define ('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYCAP', 'Notify on unknown mimetypes.');
+define ('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYDSC', 'Notification on unknown mimetypes.');
+define ('_MI_DEBASER_MIMETYPESUBMIT_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: Unknown mimetype');
 
-define('_MI_DEBASER_EMPTYMIMETYPE_NOTIFY', 'Empty mimetype');
-define('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYCAP', 'Notify upon empty mimetypes.');
-define('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYDSC', 'Notification upon empty mimetypes.');
-define('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic Notification: Empty mimetype');
+define ('_MI_DEBASER_EMPTYMIMETYPE_NOTIFY', 'Empty mimetype');
+define ('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYCAP', 'Notify on empty mimetypes.');
+define ('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYDSC', 'Notification on empty mimetypes.');
+define ('_MI_DEBASER_EMPTYMIMETYPE_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: Empty mimetype');
 
-define('_MI_DEBASERRAD_DESC', 'Gives a popup block with which you can play internet radio');
-define('_MI_DEBASERRAD_TITLE', 'Internetradio');
+define ('_MI_DEBASER_REPORTBROKEN_NOTIFY', 'Broken file/link');
+define ('_MI_DEBASER_REPORTBROKEN_NOTIFYCAP', 'Notify on broken files/links.');
+define ('_MI_DEBASER_REPORTBROKEN_NOTIFYDSC', 'Notification on broken files/links.');
+define ('_MI_DEBASER_REPORTBROKEN_NOTIFYSBJ', '[{X_SITENAME}] {X_MODULE} Automatic notification: Broken file/link');
 
-define('_MI_DEBASER_WARNING',
-       'This module comes as is, without any guarantees whatsoever. Although this module is beta, it is still under active development. This release can be used in a live website or a production environment, but its use is under your own responsibilityi, which means the author is not responsible.');
-define('_MI_DEBASER_AUTHORMSG', 'debaser is my first XOOPS module so do not complain about the code. Forgive me for not knowing better, but I am quite proud that I came so far. Not bad for someone with very limited programming skills? Hard work for someone who is only able to write &lt;?php echo "Hello World"; ?&gt; ;-).');
-define('_MI_DEBASER_MODULE_DISCLAIMER', 'Disclaimer');
-define('_MI_DEBASER_AUTHOR_WORD', 'Author comments');
-define('_MI_DEBASER_MODULE_STATUS', 'Version');
-define('_MI_DEBASER_AUTHOR_INFO', 'Author information');
-define('_MI_DEBASER_AUTHOR_WEBSITE', 'Website of the author');
-define('_MI_DEBASER_AUTHOR_EMAIL', 'E-Mail of the author');
-define('_MI_DEBASER_AUTHOR_CREDITS', 'Module credits');
-define('_MI_DEBASER_MODULE_SUPPORT', 'Supportsite');
-define('_MI_DEBASER_MODULE_BUG', 'Submit bug');
-define('_MI_DEBASER_MODULE_FEATURE', 'Request feature');
-define('_MI_DEBASER_MODULE_INFO', 'General module information');
-define('_AM_DEBASER_BY', 'Developed by');
+define('_MI_DEBASERRAD_ADMIN','Edit radio station');
+define('_MI_DEBASERTV_ADMIN','Edit TV station');
+define('_MI_DEBASERRAD_TITLE','Internetradio');
+define('_MI_DEBASERTV_TITLE','Internet-TV');
 
-define('_MI_DEBASER_HELP', 'Help');
+// admin/menu.php
+define('_MI_DEBASER_FILETYPES', 'Edit mimetype');
 
-define('_MI_DEBASER_CREDITS', 'I would like to thank all module developers who gave me the opportunity to steal and learn from their excellent scripts. Especially: "About this module" stolen from marcan\'s smart-modules. "Mimetype-Management", "Category-Images" and parts of getfile.php stolen from various wf-modules. "Admin-Interface" stolen from hszalasar\'s modules. I would like to thank the getid3-project for their class for reading file information. I would like to thank Mark Lubkowitz for his id3-class which inspired me for this module. I would like to thank Bob Janes for his exoops-conversion of iRadio. Of course I would like to thank Predator, chapi, phppp, Marcan, Liquid, gnikalu and Mithrandir for their help. If I forgot someone: Sorry!');
+define('_MI_DEBASER_DISKQUOTA','Maximum size of user directories in bytes');
+define('_MI_DEBASER_FORM_OPTIONS','Editor selection');
+define('_MI_DEBASER_FORM_OPTIONS_DESC','Select the editor you want to be used.');
+define('_MI_DEBASER_FORM_COMPACT','Compact');
+define('_MI_DEBASER_FORM_DHTML','DHTML');
+define('_MI_DEBASER_FORM_SPAW','Spaw-Editor');
+define('_MI_DEBASER_FORM_HTMLAREA','HtmlArea-Editor');
+define('_MI_DEBASER_FORM_FCK','FCK-Editor');
+define('_MI_DEBASER_FORM_KOIVI','Koivi');
+define('_MI_DEBASER_FORM_TINYEDITOR','TinyEditor');
+define('_MI_DEBASER_FORM_TINYMCE','TinyMCE');
+
+define('_MI_DEBASER_MULTILANG','Use multilingual feature');
+define('_MI_DEBASER_MULTILANGDESC','If your XOOPS is prepared for multilingual content (best used with xlanguage), you can use this feature to write multilingual content without any extra markup.');
+define('_MI_DEBASER_MYSETTINGS','User settings');
+define('_MI_DEBASER_MYPLAYLIST','Playlist');
+define('_MI_DEBASER_AUTOAPPROVE','Approve files automatically?');
+define('_MI_DEBASER_BATCHAPPROVE','Approve batched files automatically?');
+define('_MI_DEBASER_FLASHBATCH','Multiples upload with flash');
+define('_MI_DEBASER_FLASHBATCHDSC','Enter the number of uploads at one time for the flash uploader. Works only if permissions for flash upload are set.');
+define('_MI_DEBASER_PERMISSIONS','Permissions');
+define('_MI_DEBASER_MAINTENANCE','Maintenance');
+define('_MI_DEBASER_GOTOMOD','Go to modules');
+define('_MI_DEBASER_PLAYLISTBLOCK','Public Playlist');
+define('_MI_DEBASER_PLAYLISTBLOCK_DESC','Block for a public playlist');
+define('_MI_DEBASER_OWNDIR','User for these groups have their own directories for uploads.');
+define('_MI_DEBASER_INNERDISPLAY','Display player inside website (no popup)');
+define('_MI_DEBASER_USELAME','Use lame?');
+define('_MI_DEBASER_PATHTOLAME','Path to lame');
+define('_MI_DEBASER_RESAMPLETO','Resample to bitrate (with options)');
+define('_MI_DEBASER_REMOTEREADER','Method of testing links for information retrieval. Nothing should be changed here. If cURL is installed, cURL has priority over fopen.');
+define('_MI_DEBASER_EQUALIZERBLOCK','Flash equalizer');
+define('_MI_DEBASER_EQUALIZERBLOCK_DESC','Displays a flash equalizer in a block');
+define('_MI_DEBASER_ALLOWUPLOAD','Allow uploads');
+define('_MI_DEBASER_ALLOWUPLOADDSC','Groups to be allowed to submit files');
+define('_MI_DEBASER_ALLOWFLASHUPLOAD','Flash uploader');
+define('_MI_DEBASER_ALLOWFLASHUPLOADDSC','Groups to be allowed to use the flash uploader');
+define('_MI_DEBASER_ALLOWPLAYLIST','Allow playlists');
+define('_MI_DEBASER_ALLOWPLAYLISTDSC','Groups to be allowed to have playlists');
+define('_MI_DEBASER_USEQUOTA','Disk quota');
+define('_MI_DEBASER_USEQUOTADSC','Groups having a disk quota');
+define('_MI_DEBASER_ALLOWDOWNLOAD','Allow downloads');
+define('_MI_DEBASER_ALLOWDOWNLOADDSC','Groups to be allowed to download files');
+define('_MI_DEBASER_CANDELETE','Delete own files');
+define('_MI_DEBASER_CANDELETEDSC','Groups to be allowed to delete their own files');
+define('_MI_DEBASER_CANEDIT','Edit own files');
+define('_MI_DEBASER_CANEDITDSC','Groups to be allowed to edit their own files');
+define('_MI_DEBASER_BROKENREASON','Reasons for broken files');
+define('_MI_DEBASER_BROKENREASONDSC','You can add any reason you want, by editing language/yourlanguage/modinfo.php. Look for the "reasons for broken files" and add some more defines there. After doing so revisit the preferences and add the new constants here.');
+// Start: reasons for broken files
+define('_MI_DEBASER_BROK1','URL is wrong');
+define('_MI_DEBASER_BROK2','File cannot be played');
+// End: reasons for broken files
+define('_MI_DEBASER_ALLOWEMBED','Show code embedding?');
+define('_MI_DEBASER_ALLOWEMBEDDSC','Should the HTML code for embedding files on foreign website be displayed? This function is ajax based');
+define('_MI_DEBASER_MASTERLANG','Default language');
+define('_MI_DEBASER_MASTERLANGDESC','If the multilingual function is not used here, but a language hack is used on your site the default language should be entered here. Best practice: do not change anything here.');
+define('_MI_DEBASER_COND','Condition for LoFi version');
+define('_MI_DEBASER_CONDDSC','Condition for LoFi version to be played. For "Group", enter the group ids separated by blanks. For "Rank", enter the ranks (id) separated by blanks. For "Posts" enter the number of posts a user should have to get the LoFi version. <b>If there is no LoFi version, the HiFi version will be played!!</b>');
+define('_MI_DEBASER_CONDGROUP','Group');
+define('_MI_DEBASER_CONDRANK','Rank');
+define('_MI_DEBASER_CONDPOSTS','Posts');
+define('_MI_DEBASER_CONDCODE','Condition code for LoFi version');
+define('_MI_DEBASER_NOHOTLINK', 'Enable anti-hotlink?');
+define('_MI_NOHOTLINKDSC', 'When enabled, only your website and allowed external websites can link to the files. This setting could collide, when you enabled code embedding in the players.');
+define('_MI_DEBASER_ALLOWHOTLINK', 'Hotlinking allowed external websites');
+define('_MI_DEBASER_ALLOWHOTLINKDSC', 'When anti-hotlink is enabled, you can authorize websites to link to your video files by entering their address here.
+For example: "http://www.xoops.org". Do not append an ending slash / to the address. For more than one website, use a pipe "|" to seperate them.');
+define('_MI_DEBASER_USELAMESING','Use Lame on single uploads');
+define('_MI_DEBASER_USELAMESINGDSC','Reencoding of MP3 files during single upload. Can lead to timeouts when using the flash uploader.');
+define('_MI_DEBASER_ADDGENRES','Add category');
+define('_MI_DEBASER_ADDPLAYERS','Add player');
+define('_MI_DEBASER_ADDFILETYPES','Add mimetype');
+define('_MI_DEBASERRAD_ADD','Add radio station');
+define('_MI_DEBASERTV_ADD','Add TV station');
+define('_MI_DEBASER_BATCH','Batch processing');
+define('_MI_DEBASER_SAMEAUTHOR','Display files from poster');
+define('_MI_DEBASER_SAMEAUTHORDSC','You can limit the files to be shown from the same poster on singlefile.php. 0 means: show ALL files. -1 means: show NO files.');
+define('_MI_DEBASER_SIMLIMIT','Lower similarity limit');
+define('_MI_DEBASER_SIMLIMITDSC','Enter the value (only a digit) which is the percentage of the lowest similarity files could have to be displayed. -1 means: turn this feature off.');
+define('_MI_DEBASER_USEFFMPEG','Use ffmpeg?');
+define('_MI_DEBASER_USEFFMPEGDSC','You have to install ffmpeg AND ImageMagick to use this feature. Both extract thumbnails from videos and join them as an animated gif. But there are many more things you could use ffmpeg for. At the moment only this feature is used in debaser.');
+define('_MI_DEBASER_USEFFMPEGSING','Use ffmpeg on single uploads');
+define('_MI_DEBASER_USEFFMPEGSINGDSC','Extraction of images with ffmpeg during single upload. Can lead to timeouts when using the flash uploader.');
+define('_MI_DEBASER_PATHTOFFMPEG','Path to ffmpeg');
+define('_MI_DEBASER_FFMPEGFRAMES','Position of frames');
+define('_MI_DEBASER_FFMPEGFRAMESDSC','Enter the position of frames to be extracted. Values have to be in % and to be separated with blanks. Hint: Better take positions from the beginning of the file, otherwise the scripts takes too long on large files.');
+define('_MI_DEBASER_FFMPEGDELAY','Delay between frames');
+define('_MI_DEBASER_FFMPEGDELAYDSC','Gives the value in milliseconds from frame to the next frame in the animated gif.');
+define('_MI_DEBASER_FFMPEGTHUMBSIZE','Size of the thumbnail');
+define('_MI_DEBASER_FFMPEGTYPES','File types for ffmpeg conversion');
+define('_MI_DEBASER_FFMPEGTYPESDSC','Enter the file extensions separated by a blank.');
+?>

@@ -1,5 +1,4 @@
 <?php
-// $Id: include/search.inc.php,v 0.50 2004/06/30 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,31 +24,39 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-function debaser_search($queryarray, $andor, $limit, $offset)
-{
-    global $xoopsDB;
-    $sql = 'SELECT xfid, added, title, artist, album, genre FROM ' . $xoopsDB->prefix('debaser_files') . ' WHERE added>0';
-    // because count() returns 1 even if a supplied variable
-    // is not an array, we must check if $querryarray is really an array
-    if (is_array($queryarray) && $count = count($queryarray)) {
-        $sql .= " AND ((artist LIKE '%$queryarray[0]%' OR title LIKE '%$queryarray[0]%' OR genre LIKE '%$queryarray[0]%' OR album LIKE '%$queryarray[0]%')";
-        for ($i=1;$i<$count;$i++) {
-            $sql .= " $andor ";
-            $sql .= "(artist LIKE '%$queryarray[$i]%' OR title LIKE '%$queryarray[$i]%' OR genre LIKE '%$queryarray[$i]%' OR album LIKE '%$queryarray[$i]%')";
-        }
-        $sql .= ') ';
-    }
-    $sql .= 'ORDER BY added DESC';
-    $result = $xoopsDB->query($sql, $limit, $offset);
-    $ret = array();
-    $i = 0;
-    while ($myrow = $xoopsDB->fetchArray($result)) {
-        $ret[$i]['image'] = 'images/play.gif';
-        $ret[$i]['link'] = "'  onclick='javascript:openWithSelfMain(\"".XOOPS_URL . '/modules/debaser/player.php?id=' . $myrow['xfid'] . "\",\"player\",10,10);'";
-        $ret[$i]['title'] = $myrow['artist'] . ' - ' . $myrow['title'];
-        $ret[$i]['time'] = $myrow['added'];
-        $ret[$i]['uid'] = '';
-        $i++;
-    }
-    return $ret;
+function debaser_search($queryarray, $andor, $limit, $offset){
+	global $xoopsDB, $gperm_handler, $groups, $module_id, $xoopsUser;
+
+	$module_handler =& xoops_gethandler('module');
+	$module =& $module_handler->getByDirname('debaser');
+	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+	$module_id = $module->getVar('mid');
+	$gperm_handler = &xoops_gethandler('groupperm');
+	$sql = "SELECT xfid, added, title, artist, album, genreid, uid FROM ".$xoopsDB->prefix('debaser_files')." WHERE added > 0 ";
+	// because count() returns 1 even if a supplied variable
+	// is not an array, we must check if $querryarray is really an array
+	if ( is_array($queryarray) && $count = count($queryarray) ) {
+		$sql .= " AND ((artist LIKE '%$queryarray[0]%' OR title LIKE '%$queryarray[0]%' OR album LIKE '%$queryarray[0]%')";
+		for($i=1;$i<$count;$i++){
+			$sql .= " $andor ";
+			$sql .= "(artist LIKE '%$queryarray[$i]%' OR title LIKE '%$queryarray[$i]%' OR album LIKE '%$queryarray[$i]%')";
+		}
+		$sql .= ") ";
+	}
+	$sql .= "ORDER BY added DESC";
+	$result = $xoopsDB->query($sql,$limit,$offset);
+	$ret = array();
+	$i = 0;
+	while($myrow = $xoopsDB->fetchArray($result)){
+		if ($gperm_handler->checkRight('DebaserCatPerm', $myrow['genreid'], $groups, $module_id))
+		$ret[$i]['image'] = 'images/music.png';
+		$ret[$i]['link'] = "singlefile.php?id=".$myrow['xfid'];
+		$ret[$i]['title'] = $myrow['artist']." - ".$myrow['title'];
+		$ret[$i]['time'] = $myrow['added'];
+		$ret[$i]['uid'] = $myrow['uid'];
+		$i++;
+	}
+	return $ret;
 }
+
+?>

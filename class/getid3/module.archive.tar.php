@@ -3,7 +3,6 @@
 /// getID3() by James Heinrich <info@getid3.org>               //
 //  available at http://getid3.sourceforge.net                 //
 //            or http://www.getid3.org                         //
-//          also https://github.com/JamesHeinrich/getID3       //
 /////////////////////////////////////////////////////////////////
 // See readme.txt for more details                             //
 /////////////////////////////////////////////////////////////////
@@ -15,26 +14,23 @@
 /////////////////////////////////////////////////////////////////
 //                                                             //
 // Module originally written by                                //
-//      Mike Mozolin <teddybearÃ˜mail*ru>                       //
+//      Mike Mozolin <teddybearØmail*ru>                       //
 //                                                             //
 /////////////////////////////////////////////////////////////////
 
 
-class getid3_tar extends getid3_handler
-{
+class getid3_tar {
 
-	public function Analyze() {
-		$info = &$this->getid3->info;
-
-		$info['fileformat'] = 'tar';
-		$info['tar']['files'] = array();
+	function getid3_tar(&$fd, &$ThisFileInfo) {
+		$ThisFileInfo['fileformat'] = 'tar';
+		$ThisFileInfo['tar']['files'] = array();
 
 		$unpack_header = 'a100fname/a8mode/a8uid/a8gid/a12size/a12mtime/a8chksum/a1typflag/a100lnkname/a6magic/a2ver/a32uname/a32gname/a8devmaj/a8devmin/a155prefix';
 		$null_512k = str_repeat("\x00", 512); // end-of-file marker
 
-		$this->fseek(0);
-		while (!feof($this->getid3->fp)) {
-			$buffer = $this->fread(512);
+		@fseek($fd, 0);
+		while (!feof($fd)) {
+			$buffer = fread($fd, 512);
 			if (strlen($buffer) < 512) {
 				break;
 			}
@@ -51,22 +47,22 @@ class getid3_tar extends getid3_handler
 				$checksum += ord($buffer{$i});
 			}
 			$attr    = unpack($unpack_header, $buffer);
-			$name    =       (isset($attr['fname']  ) ? trim($attr['fname']  ) : '');
-			$mode    = octdec(isset($attr['mode']   ) ? trim($attr['mode']   ) : '');
-			$uid     = octdec(isset($attr['uid']    ) ? trim($attr['uid']    ) : '');
-			$gid     = octdec(isset($attr['gid']    ) ? trim($attr['gid']    ) : '');
-			$size    = octdec(isset($attr['size']   ) ? trim($attr['size']   ) : '');
-			$mtime   = octdec(isset($attr['mtime']  ) ? trim($attr['mtime']  ) : '');
-			$chksum  = octdec(isset($attr['chksum'] ) ? trim($attr['chksum'] ) : '');
-			$typflag =       (isset($attr['typflag']) ? trim($attr['typflag']) : '');
-			$lnkname =       (isset($attr['lnkname']) ? trim($attr['lnkname']) : '');
-			$magic   =       (isset($attr['magic']  ) ? trim($attr['magic']  ) : '');
-			$ver     =       (isset($attr['ver']    ) ? trim($attr['ver']    ) : '');
-			$uname   =       (isset($attr['uname']  ) ? trim($attr['uname']  ) : '');
-			$gname   =       (isset($attr['gname']  ) ? trim($attr['gname']  ) : '');
-			$devmaj  = octdec(isset($attr['devmaj'] ) ? trim($attr['devmaj'] ) : '');
-			$devmin  = octdec(isset($attr['devmin'] ) ? trim($attr['devmin'] ) : '');
-			$prefix  =       (isset($attr['prefix'] ) ? trim($attr['prefix'] ) : '');
+			$name    =        trim(@$attr['fname']);
+			$mode    = octdec(trim(@$attr['mode']));
+			$uid     = octdec(trim(@$attr['uid']));
+			$gid     = octdec(trim(@$attr['gid']));
+			$size    = octdec(trim(@$attr['size']));
+			$mtime   = octdec(trim(@$attr['mtime']));
+			$chksum  = octdec(trim(@$attr['chksum']));
+			$typflag =        trim(@$attr['typflag']);
+			$lnkname =        trim(@$attr['lnkname']);
+			$magic   =        trim(@$attr['magic']);
+			$ver     =        trim(@$attr['ver']);
+			$uname   =        trim(@$attr['uname']);
+			$gname   =        trim(@$attr['gname']);
+			$devmaj  = octdec(trim(@$attr['devmaj']));
+			$devmin  = octdec(trim(@$attr['devmin']));
+			$prefix  =        trim(@$attr['prefix']);
 			if (($checksum == 256) && ($chksum == 0)) {
 				// EOF Found
 				break;
@@ -83,27 +79,27 @@ class getid3_tar extends getid3_handler
 			}
 
 			// Read to the next chunk
-			$this->fseek($size, SEEK_CUR);
+			fseek($fd, $size, SEEK_CUR);
 
 			$diff = $size % 512;
 			if ($diff != 0) {
 				// Padding, throw away
-				$this->fseek((512 - $diff), SEEK_CUR);
+				fseek($fd, (512 - $diff), SEEK_CUR);
 			}
 			// Protect against tar-files with garbage at the end
 			if ($name == '') {
 				break;
 			}
-			$info['tar']['file_details'][$name] = array (
+			$ThisFileInfo['tar']['file_details'][$name] = array (
 				'name'     => $name,
 				'mode_raw' => $mode,
-				'mode'     => self::display_perms($mode),
+				'mode'     => getid3_tar::display_perms($mode),
 				'uid'      => $uid,
 				'gid'      => $gid,
 				'size'     => $size,
 				'mtime'    => $mtime,
 				'chksum'   => $chksum,
-				'typeflag' => self::get_flag_type($typflag),
+				'typeflag' => getid3_tar::get_flag_type($typflag),
 				'linkname' => $lnkname,
 				'magic'    => $magic,
 				'version'  => $ver,
@@ -112,13 +108,13 @@ class getid3_tar extends getid3_handler
 				'devmajor' => $devmaj,
 				'devminor' => $devmin
 			);
-			$info['tar']['files'] = getid3_lib::array_merge_clobber($info['tar']['files'], getid3_lib::CreateDeepArray($info['tar']['file_details'][$name]['name'], '/', $size));
+			$ThisFileInfo['tar']['files'] = getid3_lib::array_merge_clobber($ThisFileInfo['tar']['files'], getid3_lib::CreateDeepArray($ThisFileInfo['tar']['file_details'][$name]['name'], '/', $size));
 		}
 		return true;
 	}
 
 	// Parses the file mode to file permissions
-	public function display_perms($mode) {
+	function display_perms($mode) {
 		// Determine Type
 		if     ($mode & 0x1000) $type='p'; // FIFO pipe
 		elseif ($mode & 0x2000) $type='c'; // Character special
@@ -153,7 +149,7 @@ class getid3_tar extends getid3_handler
 	}
 
 	// Converts the file type
-	public function get_flag_type($typflag) {
+	function get_flag_type($typflag) {
 		static $flag_types = array(
 			'0' => 'LF_NORMAL',
 			'1' => 'LF_LINK',
@@ -171,7 +167,9 @@ class getid3_tar extends getid3_handler
 			'S' => 'LF_SPARSE',
 			'V' => 'LF_VOLHDR'
 		);
-		return (isset($flag_types[$typflag]) ? $flag_types[$typflag] : '');
+		return @$flag_types[$typflag];
 	}
 
 }
+
+?>

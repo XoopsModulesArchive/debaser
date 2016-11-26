@@ -1,0 +1,11 @@
+/* Fuer IE6 + IE7 einige Eigenschaften sind eigentlich nur fuer den IE7 notwendig, den IE6 stoert das allerdings nicht. */
+#nav, #nav ol li a, #nav ol li strong { height: 1% }
+#nav ol li { height: 1%; float: left; width: 11em }
+#nav li:hover ol, #nav ol.navfxenabled li.over ol { margin-left: 0 }
+
+#nav2, #nav2 ul li a, #nav2 ul li strong { height: 1% }
+#nav2 ul li { height: 1%;  float: left; width: 150px }
+#nav2 li:hover ul, #nav2 ul.navfxenabled li.over ul,#nav2 li ul li:hover ul, #nav2 .navfxenabled li ul li.over ul { left: 150px }
+#nav2 li:hover ul ul,#nav2 .navfxenabled li.over ul ul { left: -999px }
+/* 3. Menue li:hover workaround for ie6 */
+#sfnav li ul a:hover { background-color: #eda }

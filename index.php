@@ -1,5 +1,4 @@
 <?php
-// $Id: index.php,v 0.80 2004/10/24 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,99 +24,95 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/../../mainfile.php';
-    include XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
+	include 'header.php';
 
-    $GLOBALS['xoopsOption']['template_main'] = 'debaser_index.html';
-    
-    include XOOPS_ROOT_PATH.'/header.php';
+	$xoopsOption['template_main'] = 'debaser_index.html';
 
-    include_once XOOPS_ROOT_PATH.'/modules/debaser/class/debasertree.php';
+	include XOOPS_ROOT_PATH.'/header.php';
 
-    global $xoopsModuleConfig, $xoopsModule, $xoopsUser;
+	global $xoopsModuleConfig, $xoopsModule, $xoopsUser;
 
-    $myts = MyTextSanitizer::getInstance();
+	$nav_query = $xoopsDB->query("SELECT a.*, b.* FROM ".$xoopsDB->prefix('debaser_genre')." a, ".$xoopsDB->prefix('debaser_text')." b WHERE a.subgenreid = 0 AND a.genreid = b.textcatid AND b.language = $langa ORDER BY b.textcattitle ".$xoopsModuleConfig['catindex_orderby']." ");
 
-    $count = 1;
+	$hascat = $xoopsDB->getRowsNum($nav_query);
 
-    $groups = is_object($xoopsUser) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
-    $module_id = $xoopsModule->getVar('mid');
-    $gpermHandler =  xoops_getHandler('groupperm');
+	if ($hascat < 1 && $xoopsModuleConfig['masterlang'] == $langa) redirect_header(XOOPS_URL.'/', 2, _MD_DEBASER_NOCATEGORIES);
 
-    $result = $xoopsDB->query('SELECT * FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE subgenreid = 0 ORDER BY ' . $xoopsModuleConfig['catindex_sortby'] . ' '
-                              . $xoopsModuleConfig['catindex_orderby'] . ' ');
+	if ($hascat < 1 && $xoopsModuleConfig['masterlang'] != $langa) {
+		$nav_query = $xoopsDB->query("SELECT a.*, b.* FROM ".$xoopsDB->prefix('debaser_genre')." a, ".$xoopsDB->prefix('debaser_text')." b WHERE a.subgenreid = 0 AND a.genreid = b.textcatid AND b.language = ".$xoopsDB->quoteString($xoopsModuleConfig['masterlang'])." ORDER BY b.textcattitle ".$xoopsModuleConfig['catindex_orderby']." ");
+	}
 
-        while ($myrow = $xoopsDB->fetchArray($result)) {
-            $totaldownload = getTotalDebaserItems($myrow['genreid'], 1);
+	$xoTheme->addStylesheet(DEBASER_UCSS.'/module.css', array('type' => 'text/css', 'media' => 'screen', null));
 
-            if ($xoopsModuleConfig['usecatperm'] == 1) {
-                if ($gpermHandler->checkRight('DebaserCatPerm', $myrow['genreid'], $groups, $module_id)) {
-                    $title = $myts->htmlSpecialChars($myrow['genretitle']);
-                    $arr = array();
-                    $mytree = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-                    $arr = $mytree->getdebaserChildTreeArray($myrow['genreid'], 'genretitle');
+	$tree = '';
+	$depth = 1;
+	$top_level_on = 1;
+	$exclude = array();
+	array_push($exclude, 0);
 
-                    $space = 0;
-                    $subcategories = '';
+	while ($nav_row = $xoopsDB->fetchArray($nav_query)) {
+		if ($gperm_handler->checkRight('DebaserCatPerm', $nav_row['textcatid'] , $groups, $module_id)) {
+			$goOn = 1;
+			for ($x = 0; $x < count($exclude); $x++) {
+				if ($exclude[$x] == $nav_row['textcatid']) {
+					$goOn = 0;
+					break;
+				}
+			}
 
-                    foreach ($arr as $ele) {
-                        if ($gpermHandler->checkRight('DebaserCatPerm', $ele['genreid'], $groups, $xoopsModule->getVar('mid'))) {
-                            $chtitle = $myts->htmlSpecialChars($ele['genretitle']);
+			if ($goOn == 1) {
+				if (is_file(DEBASER_RIMG.'/category/'.$nav_row['imgurl']) && !empty($nav_row['imgurl'])) $imgurl = '<td style="width:'.$xoopsModuleConfig['shotwidth'].'px"><img src="'.DEBASER_UIMG.'/category/'.$nav_row['imgurl'].'" alt="" title="" class="catshot" /></td>';
+				else $imgurl = '';
 
-                            if ($space > 0) {
-                                $subcategories .= '<br />';
-                            }
+				if (!empty($nav_row['textcattext'])) $catdesc = '<td class="catdesc">'.$nav_row['textcattext'].'</td>';
+				else $catdesc = '';
 
-                            $ele['prefix'] = str_replace('.', '-', $ele['prefix']);
-                            $subcategories .= $ele['prefix']."&nbsp;<a href='" . XOOPS_URL . '/modules/debaser/genre.php?genreid=' . $ele['genreid'] . "'>" . $chtitle . '</a> ['
-                                          . countDebaserFiles($chtitle) . ']';
-                            $space++;
-                        }
-                    }
-                }
-            } else {
-                $title = $myts->htmlSpecialChars($myrow['genretitle']);
-                $arr = array();
-                $mytree = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-                $arr = $mytree->getdebaserChildTreeArray($myrow['genreid'], 'genretitle');
+				$tree .= '<div class="indexdiv"><table border="0" cellpadding="0" cellspacing="0"><tr>'.$imgurl.'<td class="cattitle"><a href="genre.php?genreid='.$nav_row['textcatid'].'">'.$nav_row['textcattitle'].'</a>&nbsp;<small>['.$nav_row['total'].']</small><br />';
+				array_push($exclude, $nav_row['textcatid']);
+				if ($nav_row['textcatid'] < 6) $top_level_on = $nav_row['textcatid'];
 
-                $space = 0;
-                $subcategories = '';
+				$tree .= build_child($nav_row['textcatid']).'</td>'.$catdesc.'</tr></table></div>';
+			}
+		}
+	}
 
-                foreach ($arr as $ele) {
-                    $chtitle = $myts->htmlSpecialChars($ele['genretitle']);
+	function build_child($oldID) {
 
-                    if ($space > 0) {
-                        $subcategories .= '<br />';
-                    }
+		global $exclude, $depth, $xoopsDB, $langa;
+		$tempTree = '';
+		$child_query = $xoopsDB->query("SELECT a.*, b.* FROM ".$xoopsDB->prefix('debaser_genre')." a, ".$xoopsDB->prefix('debaser_text')." b WHERE a.subgenreid = ".intval($oldID)." AND b.textcatsubid = ".intval($oldID)." AND b.language = $langa");
 
-                    $ele['prefix'] = str_replace('.', '-', $ele['prefix']);
-                    $subcategories .= $ele['prefix']."&nbsp;<a href='" . XOOPS_URL . '/modules/debaser/genre.php?genreid=' . $ele['genreid'] . "'>" . $chtitle . '</a> ['
-                                  . countDebaserFiles($chtitle) . ']';
-                    $space++;
-                }
-            }
-            if (is_file(XOOPS_ROOT_PATH . '/' . $xoopsModuleConfig['catimage'] . '/' . $myts->htmlSpecialChars($myrow['imgurl'])) && !empty($myrow['imgurl'])) {
-                if ($xoopsModuleConfig['usethumbs'] && function_exists('gd_info')) {
-                    $imgurl = down_debasercreatethumb($myts->htmlSpecialChars($myrow['imgurl']), $xoopsModuleConfig['catimage'], 'thumbs', $xoopsModuleConfig['shotwidth'], $xoopsModuleConfig['shotheight'],
-                        $xoopsModuleConfig['imagequality'], $xoopsModuleConfig['updatethumbs'], $xoopsModuleConfig['keepaspect']);
-                } else {
-                    $imgurl = XOOPS_URL . '/' . $xoopsModuleConfig['catimage'] . '/' . $myts->htmlSpecialChars($myrow['imgurl']);
-                }
-            } else {
-                $imgurl = '';
-            }
-            $xoopsTpl->append('categories', array('id' => $myrow['genreid'], 'title' => $title, 'image' => $imgurl, 'subcategories' => $subcategories, 'count' => $count, 'totaldownloads' => $totaldownload['count']));
-            $count++;
-        }
-    $xoopsTpl->assign('xoops_module_header', '<link rel="stylesheet" type="text/css" href="' . XOOPS_URL . '/modules/debaser/debaser.css" />');
+		while ($child = $xoopsDB->fetchArray($child_query)) {
+			if ($child['textcatid'] != $child['textcatsubid']) {
+				for ($c = 0; $c < $depth; $c++) { $tempTree .= "&nbsp;"; }
 
+				$tempTree .= '- <small><a href="genre.php?genreid='.$child['textcatid'].'">'.$child['textcattitle'].'</a>&nbsp;['.$child['total'].']</small><br />';
+				$depth++;
+				$tempTree .= build_child($child['textcatid']);
+				$depth--;
+				array_push($exclude, $child['textcatid']);
+			}
+		}
 
-/* if (!isset($catid)){
-$catid = 0;
-}
+		return $tempTree;
+	}
 
-echo maketree($catid,"SELECT genreid, subgenreid, genretitle FROM ".$xoopsDB->prefix('debaser_genre')." ORDER BY genretitle",0); */
+	$xoopsTpl->assign('indextree', $tree);
+
+  function getDefinedVars($varList, $excludeList)
+  {
+      $temp1 = array_values(array_diff(array_keys($varList), $excludeList));
+      $temp2 = array();
+      while (list($key, $value) = each($temp1)) {
+          global $$value;
+          $temp2[$value] = $$value;
+      }
+      return $temp2;
+  }
 
 
-        include_once XOOPS_ROOT_PATH.'/footer.php';
+
+
+	include_once XOOPS_ROOT_PATH.'/footer.php';
+
+?>

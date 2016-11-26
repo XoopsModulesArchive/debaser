@@ -1,6 +1,6 @@
 Hallo {X_UNAME},
 
-Es wurde versucht eine Datei des Mimetyps "{MIME_NAME}" auf {X_SITENAME} einzuschicken.
+der User {MIME_ID} hat gerade versucht eine Datei mit einem unbekannten Mimetyp auf {X_SITENAME} einzuschicken. Treten Sie mit diesem User in Kontakt um mehr zu erfahren.
 
 -----------
 

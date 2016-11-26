@@ -1,0 +1,35 @@
+<form name="ajaxsearcher" id="ajaxsearcher" action="javascript:void(null);" method="post">
+<div id="debsearchdiv">
+<span class="debsearchword"><{$smarty.const._MD_DEBASER_SEARCH}></span><input type="text" id="ajaxsearch" /> <img src="<{$smarty.const.DEBASER_UIMG}>/dialog-ok.png" name="debsearchsubmit" style="float:left" id="debsearchsubmit" alt="<{$smarty.const._SUBMIT}>"  title="<{$smarty.const._SUBMIT}>" />
+</div>
+</form>
+<div id="searchresponse"></div>
+
+<script type="text/javascript" src="<{$smarty.const.DEBASER_UJS}>/jquery.bgiframe.min.js" charset="<{$smarty.const._CHARSET}>"></script>
+<script type="text/javascript" src="<{$smarty.const.DEBASER_UJS}>/jquery.ajaxQueue.js" charset="<{$smarty.const._CHARSET}>"></script>
+<script type="text/javascript" src="<{$smarty.const.DEBASER_UJS}>/jquery.autocomplete.pack.js" charset="<{$smarty.const._CHARSET}>"></script>
+<script type="text/javascript" charset="<{$smarty.const._CHARSET}>">
+$().ready(function() {
+
+	$("ajaxsearcher").attr({ autocomplete:"off" });
+	
+	function formatItem(row) {
+		return row[0] + " (<strong>id: " + row[1] + "<\/strong>)";
+	}
+	function formatResult(row) {
+		return row[0].replace(/(<.+?>)/gi, '');
+	}
+
+	$("#ajaxsearch").autocomplete("debasersearch.php", {
+		width: 260,
+		selectFirst: false
+	});
+
+	$("#debsearchsubmit").click(function () {
+		$("#searchresponse").load("<{$smarty.const.DEBASER_URL}>/ajaxed.php", { action : "ajaxsearch", searchitem1 : document.getElementById('ajaxsearch').value });
+		});
+	
+});
+
+
+</script>

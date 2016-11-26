@@ -1,5 +1,4 @@
 <?php
-// $Id: notification.inc.php,v 1.1 2003/04/01 23:40:27 w4z004 Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,35 +24,33 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-function debaser_notify_iteminfo($category, $item_id)
-{
-    global $xoopsModule, $xoopsModuleConfig, $xoopsConfig;
+function debaser_notify_iteminfo($category, $item_id) {
 
-    if (empty($xoopsModule) || $xoopsModule->getVar('dirname') != 'debaser') {
-        $moduleHandler = xoops_getHandler('module');
-        $module = $moduleHandler->getByDirname('debaser');
-        $configHandler = xoops_getHandler('config');
-        $config =& $configHandler->getConfigsByCat(0, $module->getVar('mid'));
-    } else {
-        $module =& $xoopsModule;
-        $config =& $xoopsModuleConfig;
-    }
+	global $xoopsModule, $xoopsModuleConfig, $xoopsConfig, $xoopsDB;
 
-    if ($category=='global') {
-        $item['name'] = '';
-        $item['url'] = '';
-        return $item;
-    }
+	if (empty($xoopsModule) || $xoopsModule->getVar('dirname') != 'debaser') {
+		$module_handler =& xoops_gethandler('module');
+		$module =& $module_handler->getByDirname('debaser');
+		$config_handler =& xoops_gethandler('config');
+		$config =& $config_handler->getConfigsByCat(0,$module->getVar('mid'));
+	} else {
+		$module =& $xoopsModule;
+		$config =& $xoopsModuleConfig;
+	}
 
-    global $xoopsDB;
+	if ($category == 'global') {
+		$item['name'] = '';
+		$item['url'] = '';
+		return $item;
+	}
 
-    if ($category=='song') {
-        // Assume we have a valid story id
-        $sql = 'SELECT title FROM '.$xoopsDB->prefix('debaser_files') . ' WHERE xfid = ' . $item_id;
-        $result = $xoopsDB->query($sql); // TODO: error check
-        $result_array = $xoopsDB->fetchArray($result);
-        $item['name'] = $result_array['title'];
-        $item['url'] = XOOPS_URL . '/modules/' . $module->getVar('dirname') . '/singlefile.php?id=' . $item_id;
-        return $item;
-    }
+	if ($category == 'song') {
+		// Assume we have a valid story id
+		$result = $xoopsDB->query("SELECT title FROM ".$xoopsDB->prefix('debaser_files')." WHERE xfid = ".intval($item_id)."");
+		$result_array = $xoopsDB->fetchArray($result);
+		$item['name'] = $result_array['title'];
+		$item['url'] = DEBASER_URL . '/singlefile.php?id=' . $item_id;
+		return $item;
+	}
 }
+?>

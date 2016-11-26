@@ -1,74 +1,55 @@
 <?php
-/**
- * $Id: permissions.php v 1.03 05 july 2004 Liquid Exp $
- * Module: WF-Downloads
- * Version: v2.0.4
- * Release Date: 11 july 2004
- * Author: WF-Sections
- * Licence: GNU
- */
+//  ------------------------------------------------------------------------ //
+//                XOOPS - PHP Content Management System                      //
+//                    Copyright (c) 2000 XOOPS.org                           //
+//                       <http://www.xoops.org/>                             //
+// ------------------------------------------------------------------------- //
+//  This program is free software; you can redistribute it and/or modify     //
+//  it under the terms of the GNU General Public License as published by     //
+//  the Free Software Foundation; either version 2 of the License, or        //
+//  (at your option) any later version.                                      //
+//                                                                           //
+//  You may not change or alter any portion of this comment or credits       //
+//  of supporting developers from this source code or any supporting         //
+//  source code which is considered copyrighted (c) material of the          //
+//  original comment or credit authors.                                      //
+//                                                                           //
+//  This program is distributed in the hope that it will be useful,          //
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
+//  GNU General Public License for more details.                             //
+//                                                                           //
+//  You should have received a copy of the GNU General Public License        //
+//  along with this program; if not, write to the Free Software              //
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
+//  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/admin_header.php';
-    include_once XOOPS_ROOT_PATH.'/class/xoopsform/grouppermform.php';
-    include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
+	include 'admin_header.php';
+	include_once XOOPS_ROOT_PATH.'/class/xoopsform/grouppermform.php';
 
-    xoops_cp_header();
-    debaseradminMenu(_AM_DEBASER_PERM_MANAGEMENT);
+	xoops_cp_header();
+	debaser_adminMenu();
 
-    if ($xoopsModuleConfig['usecatperm'] == 1) {
-        echo "
-		<div style='float: left; width:100%;'>
-		<fieldset><legend style='font-weight: bold; color: #900;'>"._AM_DEBASER_PERM_CPERMISSIONS."</legend>\n
-		<div style='padding: 2px;'>\n";
+	echo '<fieldset style="padding-top:0px; margin-top:0px"><legend style="font-weight: bold; color: #900">'._AM_DEBASER_PERM_CPERMISSIONS.'</legend><div style="padding: 2px">';
 
-        $cat_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserCatPerm', _AM_DEBASER_PERM_CSELECTPERMISSIONS);
+	$cat_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserCatPerm', _AM_DEBASER_PERM_CSELECTPERMISSIONS );
 
-        $result = $xoopsDB->query('
-	SELECT genreid, subgenreid, genretitle 
-	FROM ' . $xoopsDB->prefix('debaser_genre'));
+	$result = $xoopsDB->query("SELECT genreid, subgenreid, genretitle FROM " . $xoopsDB->prefix('debaser_genre'));
 
-        if ($xoopsDB->getRowsNum($result)) {
-            while ($cat_row = $xoopsDB->fetchArray($result)) {
-                $cat_form->addItem($cat_row['genreid'], $cat_row['genretitle'], $cat_row['subgenreid']);
-            }
+	if ($xoopsDB->getRowsNum($result)) {
 
-            echo $cat_form->render();
-        } else {
-            echo '<div><strong>' . _AM_DEBASER_PERM_CNOCATEGORY . '</strong></div>';
-        }
+		while ($cat_row = $xoopsDB->fetchArray($result)) {
+			$cat_form->addItem($cat_row['genreid'], $cat_row['genretitle'], $cat_row['subgenreid']);
+		}
 
-        echo '</div></fieldset></div><br />';
-        unset($cat_form);
-    }
+		echo $cat_form->render();
+	} else {
+		echo '<div><strong>'._AM_DEBASER_PERM_CNOCATEGORY.'</strong></div>';
+	}
 
-/*
-* File permission form
-*/
-    if ($xoopsModuleConfig['usefileperm'] == 1) {
-        echo "
-		<div style='float: left; width:100%;'>
-		<fieldset><legend style='font-weight: bold; color: #900;'>"._AM_DEBASER_PERM_FPERMISSIONS."</legend>\n
-		<div style='padding: 2px;'>\n";
-        $file_form = new XoopsGroupPermForm('', $xoopsModule->getVar('mid'), 'DebaserFilePerm', _AM_DEBASER_PERM_FSELECTPERMISSIONS);
+	echo '</div></fieldset>';
+	unset ($cat_form);
 
-        $result2 = $xoopsDB->query('
-	SELECT xfid, title 
-	FROM ' . $xoopsDB->prefix('debaser_files'));
+	xoops_cp_footer();
 
-        if ($xoopsDB->getRowsNum($result2)) {
-            while ($file_row = $xoopsDB->fetchArray($result2)) {
-                $file_form->addItem($file_row['xfid'], $file_row['title'], 0);
-            }
-
-            echo $file_form->render();
-        } else {
-            echo '<div><strong>' . _AM_DEBASER_PERM_FNOFILES . '</strong></div>';
-        }
-
-        echo '</div></fieldset></div><br />';
-        unset($file_form);
-    }
-
-    echo _AM_DEBASER_PERM_PERMSNOTE;
-
-    xoops_cp_footer();
+?>

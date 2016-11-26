@@ -1,5 +1,4 @@
 <?php
-// $Id: getfile.php,v 0.80 2004/10/23 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,52 +24,113 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/../../mainfile.php';
+	include_once '../../mainfile.php';
+	include_once XOOPS_ROOT_PATH.'/modules/debaser/include/constants.php';
 
-    $myts = MyTextSanitizer::getInstance();
+	if (isset($_GET['op']) && $_GET['op'] == 'playlist') {
+		$filename = DEBASER_PLAY.'/playlist_'.$_GET['uid'].'_.'.$_GET['playlistformat'].'';
+		$newfilename = DEBASER_PLAY.'/playlist_'.$_GET['uid'].'_.'.$_GET['playlistformat'].'';
+		if ($_GET['playlistformat'] == 'wpl') $contenttype = 'application/vnd.ms-wpl';
+		else $contenttype = 'audio/mpeg';
+	} else {
 
-    $fileid = $_GET['id'] ?: 1;
+		include_once XOOPS_ROOT_PATH.'/class/module.textsanitizer.php';
+		$myts =& MyTextSanitizer::getInstance();
 
-    $sql = '
-	SELECT filename, title, artist, fileext
-	FROM ' . $xoopsDB->prefix('debaser_files') . '
-	WHERE xfid=' . (int)$fileid . '';
+		$module_handler = &xoops_gethandler('module');
+		$module =& $module_handler->getByDirname('debaser');
+		$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+		$module_id = $module->getVar('mid');
+		$config_handler =& xoops_gethandler('config');
+		$moduleConfig =& $config_handler->getConfigsByCat(0, $module_id);
 
-    $newfilename = '';
-    $result = $xoopsDB->query($sql);
+		$fileid = ($_GET['id']) ? $_GET['id'] : 1;
+		$contenttype = 'application/force-download';
 
-        if ($result) {
-            list($downfile, $downtitle, $downartist, $fileext) = $xoopsDB->fetchRow($result);
-            $newfilename = $myts -> undoHtmlSpecialChars($downartist).' - '.$myts -> undoHtmlSpecialChars($downtitle).'.'.$fileext;
-            $newfilename = str_replace(' ', '', $newfilename);
-            $filename = 'upload/'.$downfile;
-        } else {
-            redirect_header('index.php', 2, _MD_DEBASER_FILENOTFOUND);
-        }
+	$sql = "SELECT filename, title, artist, fileext, uid FROM ".$xoopsDB->prefix('debaser_files')." WHERE xfid=".intval($fileid)."";
 
-        /* This peace of code is stolen from wfsection ;-) */
+	$newfilename = '';
+	$result = $xoopsDB->query($sql);
 
-        if (strstr($_SERVER['HTTP_USER_AGENT'], 'MSIE')) {
-            header('Pragma: public');
-            header("Content-Type: audio/mpeg; name=\"".basename($filename)."\"");
-            header('Content-Length: ' . filesize($filename) . "\n");
-            header('Expires: 0');
-            header('Cache-control: private');
-            header("Content-Disposition: attachment; filename=\"".basename($newfilename)."\"");
-        } else {
-            header("Content-Type: audio/mpeg; name=\"".basename($filename)."\"");
-            header('Content-Length: ' . filesize($filename) . "\n");
-            header("Content-Disposition: attachment; filename=\"".basename($newfilename)."\"");
-            header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-            header('Cache-Control: no-store, no-cache, must-revalidate');
-            header('Cache-Control: post-check=0, pre-check=0', false);
-            header('Pragma: no-cache');
-        }
+		if ($result) {
 
-    @readfile($filename, 'r');
+		list($downfile, $downtitle, $downartist, $fileext, $uid) = $xoopsDB->fetchRow($result);
 
-    $filesql = 'UPDATE ' . $xoopsDB->prefix('debaser_files') . ' SET hits = hits+1 WHERE xfid = ' . (int)$fileid . '';
-    $fileresult = $xoopsDB->queryF($filesql);
+			if (@array_intersect($moduleConfig['owndir'], $groups)) $extrapath = 'user_'.$uid.'_/';
+			else $extrapath = '';
 
-    exit();
+		$newfilename = $myts -> undoHtmlSpecialChars($downartist).' - '.$myts -> undoHtmlSpecialChars($downtitle).'.'.$fileext;
+		$newfilename = str_replace(' ', '', $newfilename);
+		$filename = DEBASER_RUP.'/'.$extrapath.$downfile;
+		$fileresult = $xoopsDB->queryF("UPDATE ".$xoopsDB->prefix('debaser_files')." SET hits = hits+1 WHERE xfid = ".intval($fileid)."");
+
+		}
+		else {
+		redirect_header('index.php',2,_MD_DEBASER_FILENOTFOUND);
+		}
+	}
+
+	function output_file($file, $name, $mimetype) {
+
+		if(!is_readable($file)) die('File not found or inaccessible!');
+
+		$size = filesize($file);
+
+		@ob_end_clean();
+
+		if(ini_get('zlib.output_compression'))
+		ini_set('zlib.output_compression', 'Off');
+
+		header('Content-Type: ' . $mimetype);
+		header('Content-Disposition: attachment; filename="'.$name.'"');
+		header("Content-Transfer-Encoding: binary");
+		header('Accept-Ranges: bytes');
+		header("Cache-control: private");
+		header('Pragma: private');
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+
+		if (isset($_SERVER['HTTP_RANGE'])) {
+			list($a, $range) = explode("=", $_SERVER['HTTP_RANGE'], 2);
+			list($range) = explode(",", $range, 2);
+			list($range, $range_end) = explode("-", $range);
+			$range = intval($range);
+
+			if (!$range_end) $range_end = $size-1;
+			else $range_end = intval($range_end);
+
+			$new_length = $range_end-$range+1;
+			header("HTTP/1.1 206 Partial Content");
+			header("Content-Length: $new_length");
+			header("Content-Range: bytes $range-$range_end/$size");
+
+		} else {
+			$new_length = $size;
+			header("Content-Length: ".$size);
+		}
+
+		$chunksize = 1*(1024*1024);
+		$bytes_send = 0;
+
+		if ($file = fopen($file, 'r')) {
+
+			if (isset($_SERVER['HTTP_RANGE'])) fseek($file, $range);
+
+			while(!feof($file) && (!connection_aborted()) && ($bytes_send<$new_length)) {
+				$buffer = fread($file, $chunksize);
+				print($buffer);
+				flush();
+				$bytes_send += strlen($buffer);
+			}
+
+			fclose($file);
+		} else {
+			die('Error - can not open file.');
+		}
+
+		die();
+	}
+
+	set_time_limit(0);
+	output_file($filename, $newfilename, $contenttype);
+
+?>

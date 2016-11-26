@@ -1,0 +1,13 @@
+<div><span style="color:#ff0000"><{$smarty.const._MD_DEBASER_MAXUPSIZE}><{$uploadmax}> <{$smarty.const._MD_DEBASER_MAXBYTES}></span></div>
+
+<{if $usequota == true}>
+<{if $toobig == false}>
+<div><span style="color:#ff0000">
+<{$remaining}>
+</span></div>
+
+<{$flashfileform}>
+<{else}><{$smarty.const._MD_DEBASER_TOOBIG}><{/if}>
+<{else}>
+<{$flashfileform}>
+<{/if}>

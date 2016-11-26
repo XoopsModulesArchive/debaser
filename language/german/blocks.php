@@ -1,5 +1,4 @@
 <?php
-// $Id: language/german/blocks.php, v 0.7 2004/09/10 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,18 +24,20 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-define('_MB_DEBASER_BLOCLATE', 'Anzeigen: ');
-define('_MB_DEBASER_SONGS', 'Dateien');
-define('_MB_DEBASER_ALBUM', 'Album:');
-define('_MB_DEBASER_YEAR', 'Jahr:');
-define('_MB_DEBASER_COMMENT', 'Zusatzinfo:');
-define('_MB_DEBASER_TRACK', 'Track:');
-define('_MB_DEBASER_GENRE', 'Kategorie:');
-define('_MB_DEBASER_LENGTH', 'L&auml;nge:');
-define('_MB_DEBASER_BITRATE', 'Bitrate:');
-define('_MB_DEBASER_FREQUENCY', 'Frequenz:');
-define('_MB_DEBASER_PLAY', 'Play');
-define('_MB_DEBASER_HEIGHT', 'H&ouml;he: ');
-define('_MB_DEBASER_WIDTH', 'Breite: ');
-
-define('_MB_DEBASERRAD_CHO', 'Senderauswahl');
+define('_MB_DEBASER_BLOCLATE','Anzeigen: ');
+define('_MB_DEBASER_SONGS','Dateien');
+define('_MB_DEBASER_TITLE','<b>Titel:</b> ');
+define('_MB_DEBASER_ARTIST','<b>Künstler:</b> ');
+define('_MB_DEBASER_ALBUM','<b>Album:</b> ');
+define('_MB_DEBASER_YEAR','<b>Jahr:</b> ');
+define('_MB_DEBASER_TRACK','<b>Track:</b> ');
+define('_MB_DEBASER_GENRE','<b>Kategorie:</b> ');
+define('_MB_DEBASER_LENGTH','<b>Länge:</b> ');
+define('_MB_DEBASER_BITRATE','<b>Bitrate:</b> ');
+define('_MB_DEBASER_FREQUENCY','Frequenz:</b> ');
+define('_MB_DEBASER_PLAY','Play');
+define('_MB_DEBASER_HEIGHT','Höhe: ');
+define('_MB_DEBASER_WIDTH','Breite: ');
+define('_MB_DEBASERRAD_CHO','Radio-Sender auswählen');
+define('_MB_DEBASERTV_CHO','TV-Sender auswählen');
+?>

@@ -1,0 +1,10 @@
+<{if $block.playlist > 0}>
+<form action="" name="publicpl" method="get">
+<select name="playlist" id="playlist">
+  <{foreach item=pubplaylist from=$block.publicplaylist}>
+	<{$pubplaylist.options}>
+  <{/foreach}>
+</select><br />
+<{$pubplaylist.imagerow}>
+</form>
+<{/if}>

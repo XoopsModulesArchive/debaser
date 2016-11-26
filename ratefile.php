@@ -1,5 +1,4 @@
 <?php
-// $Id: ratefile.php,v 0.80 2004/10/24 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,75 +24,78 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/header.php';
-    include_once XOOPS_ROOT_PATH.'/modules/debaser/include/functions.php';
+	include 'header.php';
 
-    foreach ($_POST as $k => $v) {
-        ${$k} = $v;
-    }
+	/* updates rating data in itemtable for a given item */
+	function updatedebaserrating($sel_id) {
 
-    foreach ($_GET as $k => $v) {
-        ${$k} = $v;
-    }
+		global $xoopsDB, $xoopsModuleConfig;
 
-    if (empty($_POST['submit'])) {
-        $_POST['submit'] = '';
-    }
+		$totalrating = 0;
+		$votesDB = 0;
+		$finalrating = 0;
 
-    include XOOPS_ROOT_PATH . '/header.php';
+		$query = "SELECT rating FROM ".$xoopsDB->prefix('debaservotedata')." WHERE lid = ".intval($sel_id)."";
 
-    if ($_POST['submit']) {
-        $ratinguser = is_object($xoopsUser) ? $xoopsUser->uid() : 0;
-        $rating = $_POST['rating'] ?: 0;
+		$voteresult = $xoopsDB->query($query);
+		$votesDB = $xoopsDB->getRowsNum( $voteresult );
 
-    // Make sure only 1 anonymous from an IP in a single day.
-        $anonwaitdays = 1;
-        $ip = getenv('REMOTE_ADDR');
-        $lid = (int)$_POST['lid'];
+		while (list($rating) = $xoopsDB->fetchRow($voteresult)) {
+			$totalrating += $rating;
+		}
 
-    // Check if Rating is Null
-    if (!$rating) {
-        redirect_header("singlefile.php?id=$lid", 1, _MD_DEBASER_NORATING);
-        exit();
-    }
+		if (($totalrating) != 0 && $votesDB != 0) {
+			$finalrating = $totalrating / $votesDB;
+			$finalrating = number_format($finalrating, 4);
+		}
 
-    // Check if REG user is trying to vote twice.
-        $result = $xoopsDB->query('SELECT ratinguser FROM ' . $xoopsDB->prefix('debaservotedata') . " WHERE lid=$lid");
+		$xoopsDB->queryF("UPDATE ".$xoopsDB->prefix('debaser_files')." SET rating = '$finalrating', votes = '$votesDB' WHERE xfid  = ".intval($sel_id)."");
+	}
 
-        while (list($ratinguserDB) = $xoopsDB->fetchRow($result)) {
-            if ($ratinguserDB == $ratinguser) {
-                redirect_header("singlefile.php?id=$lid", 1, _MD_DEBASER_VOTEONCE);
-                exit();
-            }
-        }
+	if ($current_userid == 'guest' && $xoopsModuleConfig['guestvote'] == 0) redirect_header('index.php', 2, _NOPERM);
 
-    // Check if ANONYMOUS user is trying to vote more than once per day.
-    if ($ratinguser == 0) {
-        $yesterday = (time() - (86400 * $anonwaitdays));
-        $result = $xoopsDB->query('SELECT COUNT(*) FROM ' . $xoopsDB->prefix('debaservotedata') . " WHERE lid = $lid AND ratinguser = 0 AND ratinghostname = '$ip' AND ratingtimestamp > $yesterday");
 
-        list($anonvotecount) = $xoopsDB->fetchRow($result);
+	if (!empty($_GET['rating']) || !empty($_GET['lid'])) {
+		$ratinguser = (is_object($xoopsUser)) ? $current_userid : 0;
+		$rating = ($_GET['rating']) ? $_GET['rating'] : 0;
 
-        if ($anonvotecount >= 1) {
-            redirect_header("singlefile.php?id=$lid", 1, _MD_DEBASER_VOTEONCE);
-            exit();
-        }
-    }
+		// Make sure only 1 anonymous from an IP in a single day.
+		$anonwaitdays = 1;
+		$ip = getenv( "REMOTE_ADDR" );
+		$lid = intval($_GET['lid']);
 
-    // All is well.  Add to Line Item Rate to DB.
-        $newid = $xoopsDB->genId($xoopsDB->prefix('debaservotedata') . '_ratingid_seq');
-        $datetime = time();
-        $xoopsDB->query('INSERT INTO '
-                        . $xoopsDB->prefix('debaservotedata') . " (ratingid, lid, ratinguser, rating, ratinghostname, ratingtimestamp) VALUES ($newid, $lid, $ratinguser, $rating, '$ip', $datetime)");
+		// Check if Rating is Null
+		if (!$rating) redirect_header("singlefile.php?id=$lid", 2, _MD_DEBASER_NORATING);
 
-    // All is well.  Calculate Score & Add to Summary (for quick retrieval & sorting) to DB.
-    updatedebaserrating($lid);
-        $ratemessage = _MD_DEBASER_VOTEAPPRE . '<br />' . sprintf(_MD_DEBASER_THANKYOU, $xoopsConfig['sitename']);
-        redirect_header("singlefile.php?id=$lid", 1, $ratemessage);
-        exit();
-    } else {
-        redirect_header("singlefile.php?id=$lid", 1, _MD_DEBASER_UNKNOWNERROR);
-        exit();
-    }
+		// Check if ANONYMOUS user is trying to vote more than once per day.
+		if ($ratinguser == 0) {
+			$yesterday = (time() - (86400 * $anonwaitdays));
+			$result = $xoopsDB->query("SELECT COUNT(*) FROM ".$xoopsDB->prefix('debaservotedata')." WHERE lid = $lid AND ratinguser = 0 AND ratinghostname = '$ip' AND ratingtimestamp > $yesterday");
 
-    include __DIR__ . '/footer.php';
+			list($anonvotecount) = $xoopsDB->fetchRow($result);
+
+			if ($anonvotecount >= 1) redirect_header("singlefile.php?id=$lid", 2, _MD_DEBASER_VOTEONCE);
+
+		} else {
+			// Check if REG user is trying to vote twice.
+			$result = $xoopsDB->query("SELECT ratinguser FROM ".$xoopsDB->prefix('debaservotedata')." WHERE lid=$lid");
+			list($ratinguserDB) = $xoopsDB->fetchRow($result);
+		if ($ratinguserDB == $ratinguser) redirect_header("singlefile.php?id=$lid", 2, _MD_DEBASER_VOTEONCE);
+		}
+
+		// All is well.  Add to Line Item Rate to DB.
+		$newid = $xoopsDB->genId($xoopsDB->prefix('debaservotedata'). "_ratingid_seq");
+		$datetime = time();
+		$xoopsDB->queryF("INSERT INTO ".$xoopsDB->prefix('debaservotedata')." (ratingid, lid, ratinguser, rating, ratinghostname, ratingtimestamp) VALUES ($newid, $lid, $ratinguser, $rating, '$ip', $datetime)" );
+
+		// All is well.  Calculate Score & Add to Summary (for quick retrieval & sorting) to DB.
+		updatedebaserrating($lid);
+		$ratemessage = _MD_DEBASER_VOTEAPPRE . "<br />" . sprintf(_MD_DEBASER_THANKYOU, $xoopsConfig['sitename']);
+		redirect_header("singlefile.php?id=$lid", 2, $ratemessage);
+		exit();
+	} else {
+		redirect_header("singlefile.php?id=$lid", 2, _MD_DEBASER_UNKNOWNERROR);
+		exit();
+	}
+
+?>
