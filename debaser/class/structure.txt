@@ -2,6 +2,7 @@
 /// getID3() by James Heinrich <info@getid3.org>               //
 //  available at http://getid3.sourceforge.net                 //
 //            or http://www.getid3.org                         //
+//          also https://github.com/JamesHeinrich/getID3       //
 /////////////////////////////////////////////////////////////////
 //                                                             //
 // changelog.txt - part of getID3()                            //
@@ -11,6 +12,10 @@
 
 What does the returned data structure look like?
 ================================================
+
+Hint: If you take a look at the nicely-formatted output of
+/demos/demo.browse.php you can generally see where the data you want
+is returned.
 
 Note that what is described below is only a rough guide to what data
 is actually returned by getID3(), since the actual data returned
@@ -66,10 +71,9 @@ array() {
     ['filenamepath']=>string()           // full filename with path
     ['filepath']=>string()               // path to file, not including filename
     ['filesize']=>integer()              // filesize in bytes
-    ['file_modified_time']=>integer()    // file modified time as UNIX timestamp
     ['md5_file']=>string()               // md5 hash of entire file
     ['md5_data']=>string()               // md5 hash of portion of file excluding prepended and appeneded metainformation tags (ID3, APE, etc) - may be identical to ['md5_file']
-    ['md5_data_source']=>string()        // md5 hash of original source file before compression (currently used by FLAC and OptimFROG)
+    ['md5_data_source']=>string()        // md5 hash of original source file before compression (currently used by FLAC, OptimFROG, WavPack v4+)
     ['sha1_file']=>string()              // sha1 hash of entire file
     ['sha1_data']=>string()              // sha1 hash of portion of file excluding prepended and appeneded metainformation tags (ID3, APE, etc) - may be identical to ['md5_file']
     ['avdataoffset']=>integer()          // offset in bytes where audio/video data starts and prepended tags end
@@ -1508,6 +1512,7 @@ array() {
             ['subatoms']=>array()          // This is an undocumentably-complex recursive array, typically containing a huge amount of seemingly disorganized data. Avoid this like the plague.
         }                                  //
         ['time_scale']=>integer()          //
+        ['display_scale']=>integer()       // 1 = normal; 0.5 = half; 2 = double
         ['video']=>array() {               //
             ['codec']=>string()            //
             ['color_depth']=>integer()     //

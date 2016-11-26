@@ -2,6 +2,7 @@
 /// getID3() by James Heinrich <info@getid3.org>               //
 //  available at http://getid3.sourceforge.net                 //
 //            or http://www.getid3.org                         //
+//          also https://github.com/JamesHeinrich/getID3       //
 /////////////////////////////////////////////////////////////////
 //                                                             //
 // /helperapps/readme.txt - part of getID3()                   //
@@ -45,3 +46,11 @@ Taken from http://flac.sourceforge.net/download.html
 
 Taken from http://www.etree.org/shncom.html
 * shorten.exe
+
+
+/////////////////////////////////////////////////////////////////
+
+Changelog:
+
+2003.12.29:
+  * Initial release
