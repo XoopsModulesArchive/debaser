@@ -45,11 +45,3 @@ Taken from http://flac.sourceforge.net/download.html
 
 Taken from http://www.etree.org/shncom.html
 * shorten.exe
-
-
-/////////////////////////////////////////////////////////////////
-
-Changelog:
-
-2003.12.29:
-  * Initial release
