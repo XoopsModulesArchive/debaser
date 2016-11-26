@@ -1,0 +1,17 @@
+<{$adminmenu}>
+<br />
+<div style="float:left; width:100%;">
+<table class="outer" align="center" width="100%" cellspacing="5" cellpadding="5">
+     	<{foreach item=player from=$player }>		  
+<tr><td class="even"><{$player}></td>
+<td class="odd" width="40" align="center"><a href="index.php?op=editplayer&amp;playertype=<{$player}>"><img src="../images/edit.gif" width="20" height="20" alt="<{$smarty.const._EDIT}>" title="<{$smarty.const._EDIT}>" /></a></td>
+<td class="even" width="40" align="center"><a href="index.php?op=deleteplayer&amp;playertype=<{$player}>"><img src="../images/delete.gif" width="20" height="20" alt="<{$smarty.const._DELETE}>" title="<{$smarty.const._DELETE}>" /></a></td></tr>
+<{/foreach}>	
+</table>
+<br />
+<table align="center" width="100%">
+<tr>
+<td><{$newplayer}></td>
+</td>
+</tr>
+</table></div>

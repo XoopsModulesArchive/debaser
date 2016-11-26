@@ -1,0 +1,5 @@
+<div align="left"><form action="" name="displatest" method="post"><input type="hidden" name="playme" value="playlatest" /><input type="image" src="<{$xoops_url}>/modules/debaser/images/playdisp.gif" title="<{$smarty.const._MB_DEBASER_PLAY}>" /></form><{$disp_latest.donotdeletethistag}></div>
+
+  <{foreach item=disp_latest from=$block.display_latest}>
+<div><{$disp_latest.player}></div>
+  <{/foreach}>

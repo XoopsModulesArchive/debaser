@@ -1,0 +1,112 @@
+<div><a href="index.php"><{$smarty.const._MD_DEBASER_INDEX}></a> - <{$smarty.const._MD_DEBASER_GENRE}> <{$genrelist}></div><br />
+
+<div style="text-align:right;"><{$category.navbar}></div>
+<table cellpadding="5" cellspacing="5" class="outer">
+	<{section name=i loop=$filelist}>
+<tr>
+<td class="itemHead" colspan="2">
+<strong><{$filelist[i].artist}> - <{$filelist[i].title}></strong>
+</td>
+</tr>
+<tr>
+<td class="odd" colspan="2">
+<a href="singlefile.php?id=<{$filelist[i].id}>" <{if $usetooltips == true}>onmouseover="ddrivetip('<{if $filelist[i].album > 0 || $filelist[i].album != ''}><{$smarty.const._MD_DEBASER_ALBUM}> <{$filelist[i].album}><br /><{/if}><{if $filelist[i].year > 0}><{$smarty.const._MD_DEBASER_YEAR}> <{$filelist[i].year}><br /><{/if}><{if $filelist[i].addinfo > 0}><{$smarty.const._MD_DEBASER_COMMENT}> <{$filelist[i].addinfo}><br /><{/if}><{if $filelist[i].track > 0}><{$smarty.const._MD_DEBASER_TRACK}> <{$filelist[i].track}><br /><{/if}><{$smarty.const._MD_DEBASER_LENGTH}> <{$filelist[i].length}><br /><{$smarty.const._MD_DEBASER_BITRATE}> <{$filelist[i].bitrate}><br /><{$smarty.const._MD_DEBASER_FREQUENCY}> <{$filelist[i].frequence}>','lightgrey', 200);" onmouseout="hideddrivetip()"<{/if}>><{$smarty.const._MD_DEBASER_READMORE}></a>
+</td>
+</tr>
+<tr>
+<td class="even" colspan="2">
+<div align="left" style="float:left;">
+<a href="javascript:openWithSelfMain('<{$xoops_url}>/modules/debaser/player.php?id=<{$filelist[i].id}>','player',10,10)"><img src="<{$xoops_url}>/modules/debaser/images/play.gif" alt="<{$smarty.const._MD_DEBASER_PLAY}>" align="middle" /></a>
+</div>
+<div align="right">
+
+<img src="<{$xoops_url}>/modules/debaser/images/views.gif" title="<{$smarty.const._MD_DEBASER_VIEWS}>" alt="<{$smarty.const._MD_DEBASER_VIEWS}>" align="middle" />&nbsp;<strong><{$filelist[i].views}></strong><{if $allowyes == true}>&nbsp;<{if $filelist[i].link != ''}><a href="<{$filelist[i].link}>"><{else}><a href="<{$xoops_url}>/modules/debaser/getfile.php?id=<{$filelist[i].id}>"><{/if}><img src="<{$xoops_url}>/modules/debaser/images/hits.gif" height="20" width="20" title="<{$smarty.const._MD_DEBASER_HITS}>" alt="<{$smarty.const._MD_DEBASER_HITS}>" align="middle" /></a>&nbsp;<strong><{$filelist[i].hits}></strong><{/if}>
+	<{if $isxadmin == true}>
+&nbsp;<a href="<{$xoops_url}>/modules/debaser/admin/index.php?op=editmpegs&amp;mpegid=<{$filelist[i].id}>"><img src="<{$xoops_url}>/modules/debaser/images/edit.gif" alt="<{$smarty.const._MD_DEBASER_EDIT}>" align="middle" /></a>&nbsp;
+<a href="<{$xoops_url}>/modules/debaser/admin/index.php?op=deletesong&amp;mpegid=<{$filelist[i].id}>&amp;delfile=<{$filelist[i].filename}>"><img src="<{$xoops_url}>/modules/debaser/images/delete.gif" alt="<{$smarty.const._DELETE}>" align="middle" /></a>
+	<{/if}>
+	</div>
+</td>
+</tr>
+	<{/section}>
+</table>
+<div style="text-align:right;"><{$category.navbar}></div>
+<{if $xoops_notification.show}>
+<{include file='db:system_notification_select.html'}>
+<{/if}>
+<{if $usetooltips == true}>
+<div id="dhtmltooltip" style="position: absolute; width: 150px; border: 2px solid black; padding: 2px; background-color: yellow; visibility: hidden; z-index: 100; filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);"></div>
+
+<script type="text/javascript">
+
+/***********************************************
+* Cool DHTML tooltip script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
+* This notice MUST stay intact for legal use
+* Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
+***********************************************/
+
+var offsetxpoint=-60 //Customize x offset of tooltip
+var offsetypoint=20 //Customize y offset of tooltip
+var ie=document.all
+var ns6=document.getElementById && !document.all
+var enabletip=false
+if (ie||ns6)
+var tipobj=document.all? document.all["dhtmltooltip"] : document.getElementById? document.getElementById("dhtmltooltip") : ""
+
+function ietruebody(){
+return (document.compatMode && document.compatMode!="BackCompat")? document.documentElement : document.body
+}
+
+function ddrivetip(thetext, thecolor, thewidth){
+if (ns6||ie){
+if (typeof thewidth!="undefined") tipobj.style.width=thewidth+"px"
+if (typeof thecolor!="undefined" && thecolor!="") tipobj.style.backgroundColor=thecolor
+tipobj.innerHTML=thetext
+enabletip=true
+return false
+}
+}
+
+function positiontip(e){
+if (enabletip){
+var curX=(ns6)?e.pageX : event.x+ietruebody().scrollLeft;
+var curY=(ns6)?e.pageY : event.y+ietruebody().scrollTop;
+//Find out how close the mouse is to the corner of the window
+var rightedge=ie&&!window.opera? ietruebody().clientWidth-event.clientX-offsetxpoint : window.innerWidth-e.clientX-offsetxpoint-20
+var bottomedge=ie&&!window.opera? ietruebody().clientHeight-event.clientY-offsetypoint : window.innerHeight-e.clientY-offsetypoint-20
+
+var leftedge=(offsetxpoint<0)? offsetxpoint*(-1) : -1000
+
+//if the horizontal distance isn't enough to accomodate the width of the context menu
+if (rightedge<tipobj.offsetWidth)
+//move the horizontal position of the menu to the left by it's width
+tipobj.style.left=ie? ietruebody().scrollLeft+event.clientX-tipobj.offsetWidth+"px" : window.pageXOffset+e.clientX-tipobj.offsetWidth+"px"
+else if (curX<leftedge)
+tipobj.style.left="5px"
+else
+//position the horizontal position of the menu where the mouse is positioned
+tipobj.style.left=curX+offsetxpoint+"px"
+
+//same concept with the vertical position
+if (bottomedge<tipobj.offsetHeight)
+tipobj.style.top=ie? ietruebody().scrollTop+event.clientY-tipobj.offsetHeight-offsetypoint+"px" : window.pageYOffset+e.clientY-tipobj.offsetHeight-offsetypoint+"px"
+else
+tipobj.style.top=curY+offsetypoint+"px"
+tipobj.style.visibility="visible"
+}
+}
+
+function hideddrivetip(){
+if (ns6||ie){
+enabletip=false
+tipobj.style.visibility="hidden"
+tipobj.style.left="-1000px"
+tipobj.style.backgroundColor=''
+tipobj.style.width=''
+}
+}
+
+document.onmousemove=positiontip
+
+</script>
+<{/if}>

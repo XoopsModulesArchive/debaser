@@ -1,0 +1,7 @@
+<form style="margin:0px; padding:2px;" name="form" method="get" action="">
+<select name="select" onchange="javascript:openWithSelfMain('<{$xoops_url}>/modules/debaser/popup.php?select='+this.options[this.selectedIndex].value,'Radio',10,10);">
+<option>-<{$smarty.const._MB_DEBASERRAD_CHO}>-</option>
+<{foreach item=webradios from=$block.debaser_radios}>	
+<option value="<{$webradios.radio_id}>" checked="checked"><{$webradios.radio_name}></option>
+<{/foreach}>
+</select></form>

@@ -1,0 +1,34 @@
+<{if count($categories) gt 0}> 
+	<div class="odd" style="line-height: 8px;"></div><br />
+	<table border="0" cellspacing="5" cellpadding="0" align="center">
+		<tr>
+			<!-- Start category loop -->
+			<{foreach item=category from=$categories}>
+			<{if $category.image != ''}>
+			<td width="1%" align="center" valign="top" class="<{cycle values="even,odd"}>">
+					<a href="<{$xoops_url}>/modules/debaser/genre.php?genreid=<{$category.id}>">
+					
+					<img src="<{$category.image}>" alt="<{$category.alttext}>" align="middle" /></a>
+    		</td>
+			<{/if}>
+    		<td valign="middle" class="<{cycle values="odd,even"}>">
+						<a href="<{$xoops_url}>/modules/debaser/genre.php?genreid=<{$category.id}>"><strong><{$category.title}></a>&nbsp;[<{$category.totaldownloads}>]</strong><br />				
+						<{if $category.subcategories}>
+							<div style="margin-bottom: 3px;"><small><{$category.subcategories}></small></div>
+							
+    					<{/if}>
+			</td>
+    		<{if $category.count is div by 4}>
+	  </tr><tr>
+    		<{/if}>
+		<{/foreach}>
+  	<!-- End category loop -->
+</tr>
+</table>
+<br />
+<div class="odd" style="line-height: 8px;"></div>
+<{/if}> 
+<br />
+<{if $xoops_notification.show}>
+<{include file="db:system_notification_select.html"}>
+<{/if}>
