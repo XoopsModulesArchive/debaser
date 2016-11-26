@@ -1,0 +1,22 @@
+<p><strong><{$smarty.const._MD_DEBASER_MYFAVPLAYER}></strong></p>
+
+<form action="mydebaser.php" method="post">
+<table class="outer" style="width:300px;">
+<{section name=f loop=$extlist}>
+<tr>
+<td class="even"><{$extlist[f].mime_ext}> <{$playervar}></td>
+<td class="odd" align="center"><select name="selectvalues[]">
+<{section name=i loop=$playerlist}>
+	<option value="<{$extlist[f].mime_ext}>/<{$playerlist[i].playerid}>"><{$playerlist[i].playername}></option>
+<{/section}>
+</select></td>
+
+
+
+</tr>
+<{/section}>
+</table>
+<input type="hidden" name="op" value="selplayer" />
+<input type="submit" value="<{$smarty.const._SUBMIT}>" />
+</form>
+<br />

@@ -1,0 +1,44 @@
+<{$adminmenu}>
+<br />
+<div style="float:left; width:100%;">
+<!-- Start: Add new genre //-->
+<table align="center" width="100%">
+<tr>
+<td>
+<{$addnewgenre}>
+</td>
+</tr>
+</table>
+<!-- End: Add new genre //--> 
+
+<!-- Start: Add sub genre //-->
+<table align="center" width="100%">
+<tr>
+<td>
+<{$addsubcat}>
+</td>
+</tr>
+</table>
+<!-- End: Add sub genre //--> 
+
+<table border="0" cellspacing="5" cellpadding="0" align="center" class="outer" width="100%">
+	<tr>
+		<!-- Start category loop -->
+		<{foreach item=category from=$categories}>
+    	<td valign="top" class="<{cycle values="even,odd"}>" width="33%">
+		<strong><{$category.title}></strong>
+		&nbsp;<a href="category.php?op=editgenre&amp;genreid=<{$category.id}>"><img src="../images/edit.gif" align="middle" /></a>
+		&nbsp;<a href="category.php?op=deletegenre&amp;genreid=<{$category.id}>&amp;genrecat=<{$category.title}>"><img src="../images/delete.gif" align="middle" /></a>
+			<br />				
+			<{if $category.subcategories}>
+			<div style="margin-bottom: 10px; margin-top: 10px; margin-left: 16px;"><small><{$category.subcategories}></small></div>
+			<{/if}>
+		</td>
+    		<{if $category.count is div by 3}>
+	  </tr><tr>
+    		<{/if}>
+		<{/foreach}>
+  	<!-- End category loop -->
+</tr>
+</table>
+</div>
