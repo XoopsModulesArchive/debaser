@@ -1,0 +1,21 @@
+# Anti-Hotlink: Taken from the tadplayer
+
+# Tree (debaser/index.php): I was not able to use a xoops based tree for my purposes, so I took the code from here: http://www.hawkee.com/snippet/1800/
+
+# Detect plugins (debaser/js/plugins.js): Flash, Java, RealPlayer etc. script by Frederic (fw4@tvd.be). Visit http://javascriptkit.com for this script and more
+
+# Equalizer: http://www.everydayflash.com/blog/index.php/2008/03/26/classic-sound-equalizer-in-flashas3/
+
+# Resize window (debaser/js/): This javascript comes from http://www.howtocreate.co.uk
+
+jquery and plugins: License information inside the files
+
+swfupload: released under the MIT License
+
+icons: http://www.silvestre.com.ar/
+
+debaser logo by Thomas Liedtke
+
+Thumbnail Extractor and Joiner: Lorenzo Alberton BSD license
+
+Thx to all the others I forgot to mention.

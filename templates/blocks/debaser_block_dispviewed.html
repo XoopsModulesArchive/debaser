@@ -1,5 +1,2 @@
-<div align="left"><form action="" name="dispviewed" method="post"><input type="hidden" name="playme" value="playviewed" /><input type="image" src="<{$xoops_url}>/modules/debaser/images/playdisp.gif" title="<{$smarty.const._MB_DEBASER_PLAY}>" /></form><{$disp_viewed.donotdeletethistag}></div>
-
-  <{foreach item=disp_viewed from=$block.display_viewed}>
-<div><{$disp_viewed.player}></div>
-  <{/foreach}>
+<p style="margin-top:0px;"><{if $block.artist != ''}><b><{$block.artist}>:</b> <{/if}><{if $block.title != ''}><b><{$block.title}></b><{/if}></p>
+<{$block.imagerow}>

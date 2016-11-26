@@ -1,5 +1,4 @@
 <?php
-// $Id: header.php,v 0.50 2004/06/30 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,4 +24,66 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/../../mainfile.php';
+	include '../../mainfile.php';
+
+	include_once XOOPS_ROOT_PATH.'/modules/debaser/include/constants.php';
+
+	include_once DEBASER_RINC.'/functions.php';
+
+	global $xoopsDB;
+
+	$module_handler = &xoops_gethandler('module');
+	$module =& $module_handler->getByDirname('debaser');
+	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+	$module_id = $module->getVar('mid');
+	$gperm_handler = &xoops_gethandler('groupperm');
+	$config_handler =& xoops_gethandler('config');
+	$moduleConfig =& $config_handler->getConfigsByCat(0, $module_id);
+
+	if (is_object($xoopsUser)) {
+		$current_userid = $xoopsUser->getVar('uid');
+		if ($xoopsUser->isAdmin($xoopsModule->mid())) $is_deb_admin = 1;
+		else $is_deb_admin = 0;
+	} else {
+		$current_userid = 'guest';
+	}
+
+	$wysiwyg_editor = array('tinymce', 'ckeditor');
+
+	if (!in_array($xoopsModuleConfig['use_wysiwyg'], $wysiwyg_editor)) {
+		$html = 0;
+		$dobr = 1;
+	} else {
+		$html = 1;
+		$dobr = 0;
+	}
+
+	include_once XOOPS_ROOT_PATH.'/class/module.textsanitizer.php';
+	$myts =& MyTextSanitizer::getInstance();
+
+	if ($xoopsModuleConfig['multilang'] == 0) {
+		$langa = $xoopsDB->quoteString($xoopsModuleConfig['masterlang']);
+		$langb = $xoopsModuleConfig['masterlang'];
+
+	} else {
+		// get the language - could be shorter?
+		$cookietrue = (isset($_COOKIE['lang'])) ? '1' : '0';
+		$gettrue = (isset($_GET['lang'])) ? '1' : '0';
+
+		if ($cookietrue == '0' && $gettrue == '0') {
+			$langa = $xoopsDB->quoteString($xoopsConfig['language']);
+			$langb = $xoopsConfig['language'];
+		}
+
+		if (($cookietrue == '1') || ($cookietrue == '1' && $gettrue == '1')) {
+			$langa = $xoopsDB->quoteString($_COOKIE['lang']);
+			$langb = $_COOKIE['lang'];
+		}
+
+		if (($gettrue == '1') || ($gettrue == '1' && $cookietrue == '0')) {
+			$langa = $xoopsDB->quoteString($_GET['lang']);
+			$langb = $_GET['lang'];
+		}
+	}
+
+?>

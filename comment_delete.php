@@ -1,5 +1,4 @@
 <?php
-// $Id: comment_delete.php,v 1.1 2004/01/29 14:45:23 buennagel Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,5 +24,7 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/../../mainfile.php';
-    include XOOPS_ROOT_PATH.'/include/comment_delete.php';
+	include '../../mainfile.php';
+	include XOOPS_ROOT_PATH.'/include/comment_delete.php';
+
+?>

@@ -1,343 +1,511 @@
 <?php
+//  ------------------------------------------------------------------------ //
+//                XOOPS - PHP Content Management System                      //
+//                    Copyright (c) 2000 XOOPS.org                           //
+//                       <http://www.xoops.org/>                             //
+// ------------------------------------------------------------------------- //
+//  This program is free software; you can redistribute it and/or modify     //
+//  it under the terms of the GNU General Public License as published by     //
+//  the Free Software Foundation; either version 2 of the License, or        //
+//  (at your option) any later version.                                      //
+//                                                                           //
+//  You may not change or alter any portion of this comment or credits       //
+//  of supporting developers from this source code or any supporting         //
+//  source code which is considered copyrighted (c) material of the          //
+//  original comment or credit authors.                                      //
+//                                                                           //
+//  This program is distributed in the hope that it will be useful,          //
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
+//  GNU General Public License for more details.                             //
+//                                                                           //
+//  You should have received a copy of the GNU General Public License        //
+//  along with this program; if not, write to the Free Software              //
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
+//  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/admin_header.php';
-    include XOOPS_ROOT_PATH.'/class/xoopsformloader.php';
-    include_once __DIR__ . '/../include/functions.php';
-    include_once XOOPS_ROOT_PATH.'/modules/debaser/class/debasertree.php';
-    include_once XOOPS_ROOT_PATH.'/class/xoopslists.php';
+	include 'admin_header.php';
+	include XOOPS_ROOT_PATH.'/class/xoopsformloader.php';
+	include_once XOOPS_ROOT_PATH.'/class/xoopslists.php';
+	include_once DEBASER_CLASS.'/debasertree.php';
 
-    /* assigning get-variables to work with register_globals off */
-    if (isset($_GET['op']) && $_GET['op'] == 'genremanager') {
-        $op = 'genremanager';
-    }
+	// default function
+	function debaserCatIndex() {
 
-    if (isset($_GET['op']) && $_GET['op'] == 'editgenre') {
-        $op = 'editgenre';
-        $genreid = $_GET['genreid'];
-    }
+		global $xoopsDB, $myts, $xoopsModule, $xoopsModuleConfig, $editor, $xoopsConfig, $xoTheme;
+		// Add a New Main Category
+		debaser_adminMenu();
 
-    if (isset($_POST['op']) && $_POST['op'] == 'newgenresave') {
-        $op = 'newgenresave';
-    }
+		$resultgenre = $xoopsDB->query("SELECT genreid FROM ".$xoopsDB->prefix('debaser_genre')."");
+		$anycats = $xoopsDB->getRowsNum($resultgenre);
 
-    if (isset($_POST['op']) && $_POST['op'] == 'editgenresave') {
-        $op = 'editgenresave';
-    }
+		$nuform = new XoopsThemeForm(_AM_DEBASER_ADDNEWGENRE, 'addnewgenre', 'category.php');
+		$nuform->setExtra('enctype="multipart/form-data"');
 
-    if (isset($_GET['op']) && $_GET['op'] == 'deletegenre') {
-        $op = 'deletegenre';
-    }
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$langlist = XoopsLists::getLangList();
+						$flaglist = '';
+			foreach ($langlist as $flags) {
+				$flaglist .= '<img onclick="toggleMe2(\'addnewgenre\', \''.$flags.'\')" src="'.DEBASER_UIMG.'/'.$flags.'.gif" alt="'.$flags.'" title="'.$flags.'" id="'.$flags.'" /> ';
+			}
+			$nuform->addElement(new XoopsFormLabel(_AM_DEBASER_LANGSELECT, $flaglist));
 
-    if (isset($_POST['op']) && $_POST['op'] == 'newsubgenresave') {
-        $op = 'newsubgenresave';
-    }
-    /* ------------------------------------------ */
+			foreach ($langlist as $languagetitle) {
+				if ($languagetitle == $xoopsConfig['language'].'_title') {
+					$languagetitle = new XoopsFormText(_AM_DEBASER_TITLANGUAGE.$languagetitle, $languagetitle.'_title', 50, 255);
+					$nuform->addElement($languagetitle, true);
+				} else {
+					$languagetitle = new XoopsFormText(_AM_DEBASER_TITLANGUAGE.$languagetitle, $languagetitle.'_title', 50, 255);
+					$nuform->addElement($languagetitle, true);
+				}
+				unset($languagetitle);
+			}
+		} else {
+			$nuform->addElement(new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 255), true);
+		}
 
-    /* function for displaying available categories */
-    function genremanager()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
+		if ($anycats) {
+		$subtree = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+		ob_start();
+		$subtree->makeDebaserMySelBox('textcattitle', 'textcattitle', 0, 1, 'genreid');
+		$subgenre = new XoopsFormLabel(_AM_DEBASER_SUBCAT, ob_get_contents());
+		ob_end_clean();
+		$nuform->addElement($subgenre);
+		}
 
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
+		$path = 'modules/debaser/images/category';
+		$graph_array = &XoopsLists::getImgListAsArray(XOOPS_ROOT_PATH . "/" . $path);
+		$indeximage_select = new XoopsFormSelect('', 'imgurl');
+		$indeximage_select -> addOption ('', '----------');
+		$indeximage_select->addOptionArray($graph_array);
+		$indeximage_select->setExtra("onchange='showImgSelected(\"image\", \"imgurl\", \"" . $path . "\", \"\", \"" . XOOPS_URL . "\")'");
+		$indeximage_tray = new XoopsFormElementTray(_AM_DEBASER_FCATEGORY_CIMAGE, '&nbsp;');
+		$indeximage_tray->addElement($indeximage_select);
+		$indeximage_tray->addElement(new XoopsFormFile('', 'catfile', 0));
 
-        global $xoopsDB, $filelist, $genrelist, $genretitle, $xoopsModuleConfig, $xoopsModule, $myts;
-        $myts = MyTextSanitizer::getInstance();
-        $mytree = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
+		if (!empty($imgurl))
+			$indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='".DEBASER_UIMG."/category/" . $imgurl . "' name='image' id='image' alt='' />"));
+		else
+			$indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . "/uploads/blank.gif' name='image' id='image' alt='' />"));
 
-        $count = 1;
-        $chcount = 0;
-        $countin = 0;
 
-        $result = $xoopsDB->query('SELECT * FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE subgenreid = 0 ');
+		$nuform->addElement($indeximage_tray);
 
-        while ($myrow = $xoopsDB->fetchArray($result)) {
-            $countin++;
 
-            $title = $myts->htmlSpecialChars($myrow['genretitle']);
-            $arr = array();
-            $mytree = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-            $arr = $mytree->getdebaserChildTreeArray($myrow['genreid'], 'genretitle');
-            $space = 0;
-            $chcount = 0;
-            $subcategories = '';
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			foreach ($langlist as $languagedesc) {
+				$languagedesc = get_debaserwysiwyg(_AM_DEBASER_DESCLANGUAGE.$languagedesc, $languagedesc.'_description', '', '100%', '400px', 'hiddentext');
+				$nuform->addElement($languagedesc);
+				unset($languagedesc);
+			}
+		} else {
+			$nuform->addElement(get_debaserwysiwyg(_AM_DEBASER_CATDESCRIPTION, 'description', '', '100%', '400px', 'hiddentext'));
+		}
 
-            foreach ($arr as $ele) {
-                $chtitle = $myts->htmlSpecialChars($ele['genretitle']);
+		$nuform->addElement(new XoopsFormText(_AM_DEBASER_WEIGHT, 'catweight', 4, 4, '0'));
+		$nuform->addElement(new XoopsFormHidden('op', 'addCat'));
+		$nuform->addElement(new XoopsFormHidden('cid', '0'));
+		$nuform->addElement(new XoopsFormButton('', 'dbsubmit', _SUBMIT, 'submit'));
+		$nuform->display();
 
-                if ($space > 0) {
-                    $subcategories .= '<br />';
-                }
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$xoTheme->addScript(DEBASER_UJS.'/functions.js', array('type' => 'text/javascript'), null);
+			$multijs = 'window.onload = function() {';
 
-                $ele['prefix'] = str_replace('.', '-', $ele['prefix']);
-                $subcategories .= $ele['prefix'] . '&nbsp;'
-                                          . $chtitle . "&nbsp;&nbsp;<a href='category.php?op=editgenre&amp;genreid=" . $ele['genreid'] . "'><img src='../images/edit.gif' align='middle' /></a>&nbsp;<a href='category.php?op=deletegenre&amp;genreid=" . $ele['genreid'] . '&amp;genrecat='
-                                          . $ele['genretitle'] . "'><img src='../images/delete.gif' align='middle' /></a><br />";
-                $space++;
-                $chcount++;
-            }
+			foreach ($langlist as $wotever) {
+				$trnodetitle = $wotever.'_title';
+				$trnodedesc = $wotever.'_description';
+				$multijs .= 'var '.$trnodetitle.' = document.getElementById("'.$trnodetitle.'").parentNode.parentNode;
+				'.$trnodetitle.'.style.display="none";
+				var '.$trnodedesc.' = document.getElementById("'.$trnodedesc.'").parentNode.parentNode;
+				'.$trnodedesc.'.style.display="none";';
+			}
+			$multijs .= '}';
+			$xoTheme->addScript(null, array('type' => 'text/javascript'), $multijs);
+		}
+	}
 
-            $xoopsTpl->append('categories', array('id' => $myrow['genreid'], 'title' => $title, 'subcategories' => $subcategories, 'count' => $count));
-            $count++;
-        }
+	function editCat() {
 
-        $genreid = isset($_POST['genreid']) ? $_POST['genreid'] : 0;
+		global $xoopsDB, $xoopsConfig, $xoopsModuleConfig;
 
-        $memberHandler =  xoops_getHandler('member');
-        $group_list =  $memberHandler -> getGroupList();
-        $gpermHandler =  xoops_getHandler('groupperm');
-        $groups = $gpermHandler -> getGroupIds('DebaserCatPerm', $genreid, $xoopsModule -> getVar('mid'));
-        $groups = $groups;
+		debaser_adminMenu();
 
-        $nuform = new XoopsThemeForm(_AM_DEBASER_ADDNEWGENRE, 'addnewgenre', 'category.php');
-        if ($xoopsModuleConfig['usecatperm'] == 1) {
-            $nuform -> addElement(new XoopsFormSelectGroup(_AM_DEBASER_FCATEGORY_GROUPPROMPT, 'groups', true, $groups, 5, true));
-        }
-        $formgenrename = new XoopsFormText(_AM_DEBASER_GENRE, 'genrenew', 50, 50);
-        $graph_array = XoopsLists::getFileListAsArray(XOOPS_ROOT_PATH . '/' . $xoopsModuleConfig['catimage']);
-        $indeximage_select = new XoopsFormSelect('', 'imgurl');
-        $indeximage_select -> addOption('', '----------');
-        $indeximage_select->addOptionArray($graph_array);
-        $indeximage_select->setExtra("onchange='showImgSelected(\"image\", \"imgurl\", \"" . $xoopsModuleConfig['catimage'] . "\", \"\", \"" . XOOPS_URL . "\")'");
-        $indeximage_tray = new XoopsFormElementTray(_AM_DEBASER_FCATEGORY_CIMAGE, '&nbsp;');
-        $indeximage_tray->addElement($indeximage_select);
+		$resultgenre = $xoopsDB->query("SELECT genreid FROM ".$xoopsDB->prefix('debaser_genre')."");
+		$anycats = $xoopsDB->getRowsNum($resultgenre);
 
-        if (!empty($imgurl)) {
-            $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . '/' . $xoopsModuleConfig['catimage'] . '/' . $imgurl . "' name='image' id='image' alt='' />"));
-        } else {
-            $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . "/uploads/blank.gif' name='image' id='image' alt='' />"));
-        }
-        $formgenreweight = new XoopsFormText(_AM_DEBASER_WEIGHT, 'catweight', 4, 4, '0');
-        $op_hidden = new XoopsFormHidden('op', 'newgenresave');
-        $submit_button = new XoopsFormButton('', 'dbsubmit', _SUBMIT, 'submit');
-        $nuform->addElement($formgenrename);
-        $nuform->addElement($indeximage_tray);
-        $nuform->addElement($formgenreweight);
-        $nuform->addElement($op_hidden);
-        $nuform->addElement($submit_button);
-        $xoopsTpl->assign('addnewgenre', $nuform->render());
+		if ($anycats) {
 
-        $subcatform = new XoopsThemeForm(_AM_DEBASER_ADDNEWSUBGENRE, 'addnewsubgenre', 'category.php');
-        $subgenre_tray = new XoopsFormElementTray(_AM_DEBASER_SUBGENRE, '');
-        $subgenre_tray->addElement(new XoopsFormHidden('op', 'newsubgenresave'));
-        $subgenrename = new XoopsFormText('', 'subgenrenew', 50, 50);
-        $subgenre_tray->addElement($subgenrename);
-        $mytreechose = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-        ob_start();
-        $mytreechose->debaserSelBox('genretitle', 'genretitle', 0, 1, 'subgenrefrom');
-        $subgenre_tray->addElement(new XoopsFormLabel(_AM_DEBASER_GENREIN, ob_get_contents()));
-        ob_end_clean();
-        $subgenre_tray->addElement(new XoopsFormButton('', 'subgenresubmit', _SUBMIT, 'submit'));
-        $subcatform->addElement($subgenre_tray);
-        $xoopsTpl->assign('addsubcat', $subcatform->render());
+			// Modify Category
+			$modform = new XoopsThemeForm(_AM_DEBASER_MODCAT, 'modcat', 'category.php');
+			$mytreechose = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+			ob_start();
+			$mytreechose->makeDebaserMySelBox('textcattitle', 'textcattitle');
+			$modgenre = new XoopsFormLabel(_AM_DEBASER_MODIFY, ob_get_contents());
+			ob_end_clean();
+			$modform->addElement($modgenre);
+			$modform->addElement(new XoopsFormHidden('op', 'modCat'));
+			$modform->addElement(new XoopsFormButton('', 'modsubmit', _AM_DEBASER_MODIFY, 'submit'));
+			$modform->display();
+		} else {
+			echo _AM_DEBASER_NOCAT2EDIT;
+		}
+	}
 
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(2, _AM_DEBASER_EDITGENRES));
-        $xoopsTpl->display('db:debaser_amgenremanage.html');
-    }
-    /* ------------------------------------------ */
+	// function for adding new categories
+	function addCat() {
 
-    /* function for deleting genre when confirmed */
-    function deletegenre($del=0)
-    {
-        global $xoopsDB;
+		global $xoopsDB, $myts, $xoopsModuleConfig, $xoopsConfig;
 
-        if (isset($_POST['del']) && $_POST['del'] == 1) {
-            $sql1 = '
-		DELETE 
-		FROM ' . $xoopsDB->prefix('debaser_genre') . ' 
-		WHERE genretitle=' . $xoopsDB->quoteString($_POST['genrecat']) . ' ';
 
-            $sql2 = '
-		DELETE 
-		FROM ' . $xoopsDB->prefix('debaser_files') . ' 
-		WHERE genre=' . $xoopsDB->quoteString($_POST['genrecat']) . ' ';
+		if (isset($_FILES['catfile']) && !empty($_FILES['catfile']['name'])) {
+		include_once XOOPS_ROOT_PATH.'/class/uploader.php';
 
-            $sql3 =
-            'SELECT filename 
-		FROM ' . $xoopsDB->prefix('debaser_files') . ' 
-		WHERE genreid=' . $xoopsDB->quoteString($_POST['genrecat']) . ' ';
-            $result3 = $xoopsDB->query($sql3);
+		$uploaddir = DEBASER_ROOT.'/images/category/';
 
-            if ($xoopsDB->query($sql1) && $xoopsDB->query($sql2)) {
-                while (list($filename) = $xoopsDB->fetchRow($result3)) {
-                    @unlink(XOOPS_ROOT_PATH.'/modules/debaser/upload/'.$filename);
-                    xoops_groupperm_deletebymoditem($xoopsModule -> getVar('mid'), 'WF3DownCatPerm', $genreid);
-                }
-                redirect_header('index.php', 2, $_POST['genrecat']._AM_DEBASER_DELETED);
-            } else {
-                redirect_header('index.php', 2, $_POST['genrecat']._AM_DEBASER_NOTDELETED);
-            }
-            exit();
-        } else {
-            echo '<h4>' . _AM_DEBASER_GENREADMIN . '</h4>';
-            xoops_confirm(array('genreid' => $_GET['genreid'], 'genrecat' => $_GET['genrecat'], 'del' => 1), 'category.php?op=deletegenre', _AM_DEBASER_SUREDELETEGENRE);
-        }
-  //xoops_notification_deletebyitem($xoopsModule->getVar('mid'), 'song', $_POST['mpegid']);
-    //xoops_notification_deletebyitem($xoopsModule->getVar('mid'), 'category', $_POST['genrecat']);
-    }
-    /* ------------------------------------------ */
+		$allowed_mimetypes = array('image/gif', 'image/jpeg', 'image/pjpeg', 'image/x-png');
 
-    /* function for modifying category */
-    function editgenre()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
+		$uploader = new XoopsMediaUploader($uploaddir, $allowed_mimetypes, $xoopsModuleConfig['catimagefsize'], $xoopsModuleConfig['shotwidth'], $xoopsModuleConfig['shotheight']);
+		if ($uploader->fetchMedia($_POST['xoops_upload_file'][0])) {
+			if (!$uploader->upload()) {
+				echo $uploader->getErrors();
+			} else {
+				$imgurl = $uploader->getSavedFileName();
+			}
+		} else {
+			echo $uploader->getErrors();
+		}
+		} else {
+			$imgurl = $_POST['imgurl'];
+		}
 
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
+		if (isset($_POST['genreid']))
+			$pid = $_POST['genreid'];
+		else
+			$pid = 0;
 
-        global $xoopsDB, $genrecat, $xoopsModuleConfig, $xoopsModule;
+		if ($xoopsModuleConfig['multilang'] == 0) {
+			$title = $_POST['title'];
+			$description = $_POST['description'];
+		} else {
+			$titleadder = $xoopsConfig['language'].'_title';
+			$title = $_POST[$titleadder];
+			$langlist = XoopsLists::getLangList();
+			$aa = implode(',', $langlist);
+			$bb = explode(',', $aa);
+		}
 
-        $sql = 'SELECT genreid, subgenreid, genretitle, imgurl, catweight FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE genreid=' . (int)$_GET['genreid'] . '';
-        $result = $xoopsDB->query($sql);
-        list($genreid, $subgenreid, $genretitle, $imgurl, $catweight) = $xoopsDB->fetchRow($result);
+		$newid = $xoopsDB->genId($xoopsDB->prefix('debaser_genre')."_genreid_seq");
+		$genreresult = $xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_genre')." (genreid, subgenreid, genretitle, imgurl, catweight, language) VALUES (".intval($newid).", ".intval($pid).", ".$xoopsDB->quoteString($title).", ".$xoopsDB->quoteString($imgurl).", ".intval($_POST['catweight']).", ".$xoopsDB->quoteString($xoopsConfig['language']).")");
 
-        $memberHandler =  xoops_getHandler('member');
-        $group_list = & $memberHandler -> getGroupList();
-        $gpermHandler =  xoops_getHandler('groupperm');
-        $groups = $gpermHandler -> getGroupIds('DebaserCatPerm', $genreid, $xoopsModule -> getVar('mid'));
-        $groups = $groups;
+		if ($newid == 0) $newid = $xoopsDB->getInsertId();
 
-        $edform = new XoopsThemeForm(_AM_DEBASER_EDITGENRE, 'editgenre', 'category.php');
-    
-        if ($xoopsModuleConfig['usecatperm'] == 1) {
-            $edform -> addElement(new XoopsFormSelectGroup(_AM_DEBASER_FCATEGORY_GROUPPROMPT, 'groups', true, $groups, 5, true));
-        }
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$i = 0;
+			foreach ($langlist as $langcontent) {
+				$posttitle = $bb[$i].'_title';
+				$postdescription = $bb[$i].'_description';
 
-        $formgenrename = new XoopsFormText(_AM_DEBASER_GENRE, 'genrenew', 50, 50, $genretitle);
+				if ($_POST[$posttitle] != '' && $_POST[$postdescription] != '') {
+					$result = $xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textcatid, textcatsubid, textcattitle, textcattext, language) VALUES (".intval($newid).", ".intval($pid).", ".$xoopsDB->quoteString($_POST[$posttitle]).", ".$xoopsDB->quoteString($_POST[$postdescription]).", ".$xoopsDB->quoteString("$bb[$i]").")");
+				}
+				$i++;
+			}
+		} else {
+			$result = $xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textcatid, textcatsubid, textcattitle, textcattext, language) VALUES (".intval($newid).", ".intval($pid).", ".$xoopsDB->quoteString($title).", ".$xoopsDB->quoteString($description).", ".$xoopsDB->quoteString($xoopsConfig['language']).")");
+		}
 
-        if ($subgenreid == 0) {
-            $graph_array = &XoopsLists::getFileListAsArray(XOOPS_ROOT_PATH . '/' . $xoopsModuleConfig['catimage']);
-            $indeximage_select = new XoopsFormSelect('', 'imgurl', $imgurl);
-            $indeximage_select -> addOption('', '----------');
-            $indeximage_select->addOptionArray($graph_array);
-            $indeximage_select->setExtra("onchange='showImgSelected(\"image\", \"imgurl\", \"" . $xoopsModuleConfig['catimage'] . "\", \"\", \"" . XOOPS_URL . "\")'");
-            $indeximage_tray = new XoopsFormElementTray(_AM_DEBASER_FCATEGORY_CIMAGE, '&nbsp;');
-            $indeximage_tray->addElement($indeximage_select);
+		// Notify of new category
+		global $xoopsModule;
+		$tags = array();
+		$tags['GENRE_NAME'] = $title;
+		$notification_handler =& xoops_gethandler('notification');
+		$notification_handler->triggerEvent('global', 0, 'new_genre', $tags);
+		redirect_header('category.php?op=debaserCatIndex', 2, _AM_DEBASER_CATADDED);
+	}
 
-            if (!empty($imgurl)) {
-                $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . '/' . $xoopsModuleConfig['catimage'] . '/' . $imgurl . "' name='image' id='image' alt='' />"));
-            } else {
-                $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . "/uploads/blank.gif' name='image' id='image' alt='' />"));
-            }
-        }
+	// function for modifying existing categories
+	function modCat() {
 
-        $formgenreweight = new XoopsFormText(_AM_DEBASER_WEIGHT, 'catweight', 4, 4, $catweight);
-        $op_hidden = new XoopsFormHidden('op', 'editgenresave');
-        $genreid_hidden = new XoopsFormHidden('genreid', $genreid);
-        $genrecat_hidden = new XoopsFormHidden('genrecat', $genretitle);
-        $submit_button = new XoopsFormButton('', 'dbsubmit', _SUBMIT, 'submit');
-        $edform->addElement($formgenrename);
-        $edform->addElement($indeximage_tray);
-        $edform->addElement($formgenreweight);
-        $edform->addElement($op_hidden);
-        $edform->addElement($genreid_hidden);
-        $edform->addElement($genrecat_hidden);
-        $edform->addElement($submit_button);
-        $xoopsTpl->assign('editgenre', $edform->render());
-        $xoopsTpl->assign('genrecat', $genrecat);
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(2, _AM_DEBASER_EDITGENRE.' : '.$genretitle));
-        $xoopsTpl->display('db:debaser_ameditgenre.html');
-    }
-    /* ------------------------------------------ */
+		global $xoopsDB, $myts, $xoopsModuleConfig, $xoopsConfig, $xoTheme;
 
-    /* function for saving renamed genres */
-    function editgenresave()
-    {
-        global $xoopsDB;
-        $groups = isset($_POST['groups']) ? $_POST['groups'] : array();
-        $xoopsDB->query('
-	UPDATE ' . $xoopsDB->prefix('debaser_genre') . ' 
-	SET 
-		genretitle = ' . $xoopsDB->quoteString($_POST['genrenew']) . ', 
-		imgurl = ' . $xoopsDB->quoteString($_POST['imgurl']) . ',
-		catweight = ' . (int)$_POST['catweight'] . '  
-	WHERE genretitle = ' . $xoopsDB->quoteString($_POST['genrecat']) . ' ');
+		if ($xoopsModuleConfig['multilang'] == 0) $singlelang = ' AND b.language = '.$xoopsConfig['language'].'';
+		else $singlelang = '';
 
-        debaser_save_Perm($groups, $_POST['genreid'], 'DebaserCatPerm');
-        $newid = $_POST['genreid'];
+		$result = $xoopsDB->query("SELECT genreid, subgenreid, imgurl, catweight FROM ".$xoopsDB->prefix('debaser_genre')." WHERE genreid = ".intval($_POST['textcatid'])."");
+		list ($catid, $subgenreid, $imgurl, $catweight) = $xoopsDB->fetchRow($result);
 
-        $xoopsDB->query('
-	UPDATE ' . $xoopsDB->prefix('debaser_files') . ' 
-	SET genre = ' . $xoopsDB->quoteString($_POST['genrenew']) . ' 
-	WHERE genre = ' . $xoopsDB->quoteString($_POST['genrecat']) . '');
+		debaser_adminMenu();
 
-        redirect_header('index.php', 1, _AM_DEBASER_DBUPDATE);
-    }
-    /* ------------------------------------------ */
+		$modform = new XoopsThemeForm(_AM_DEBASER_MODCAT, 'modcat', 'category.php');
+		$modform->setExtra('enctype="multipart/form-data"');
 
-    /* function for saving new categories */
-    function newgenresave()
-    {
-        global $xoopsDB, $groups, $xoopsModule, $newid;
-        $groups = isset($_POST['groups']) ? $_POST['groups'] : array();
-        $xoopsDB->query('
-	INSERT INTO ' . $xoopsDB->prefix('debaser_genre') . ' (genretitle, imgurl, catweight) 
-	VALUES (' . $xoopsDB->quoteString($_POST['genrenew']) . ', ' . $xoopsDB->quoteString($_POST['imgurl']) . ', ' . (int)$_POST['catweight'] . ') ');
+		if ($xoopsModuleConfig['multilang'] == 1) {
+    		$langlist = XoopsLists::getLangList();
+			$flaglist = '';
+			foreach ($langlist as $flags) {
+				$flaglist .= '<img onclick="toggleMe2(\'addnewgenre\', \''.$flags.'\')" src="'.DEBASER_UIMG.'/'.$flags.'.gif" alt="'.$flags.'" title="'.$flags.'" id="'.$flags.'" /> ';
+			}
+			$modform->addElement(new XoopsFormLabel(_AM_DEBASER_LANGSELECT, $flaglist));
 
-        $newid = $xoopsDB->getInsertId();
+			foreach ($langlist as $key => $languagetitle) {
+				$langresult = $xoopsDB->query("SELECT textcattitle FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = '$languagetitle' AND textcatid = ".intval($catid)."");
+				list ($title) = $xoopsDB->fetchRow($langresult);
+				$languagetitle = new XoopsFormText(_AM_DEBASER_TITLANGUAGE.$languagetitle, $languagetitle.'_title', 50, 50, $title);
+				$modform->addElement($languagetitle, true);
+				unset($languagetitle);
+			}
+		} else {
+			$langresult = $xoopsDB->query("SELECT textcattitle FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = ".$xoopsDB->quote($xoopsConfig['language'])." AND textcatid = ".intval($catid)."");
+			list ($title) = $xoopsDB->fetchRow($langresult);
+			$modform->addElement(new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 50, $title), true);
+		}
 
-        debaser_save_Perm($groups, $newid, 'DebaserCatPerm');
+		$path = 'modules/debaser/images/category';
 
-        $notificationHandler = xoops_getHandler('notification');
-        $tags = array();
-        $tags['GENRE_NAME'] = $_POST['genrenew'];
-        $notificationHandler->triggerEvent('global', 0, 'new_genre', $tags);
-        redirect_header('index.php', 1, _AM_DEBASER_DBUPDATE);
-    }
-/* ------------------------------------------ */
+		$graph_array = &XoopsLists::getImgListAsArray(XOOPS_ROOT_PATH . "/" . $path);
+		$indeximage_select = new XoopsFormSelect('', 'imgurl', $imgurl);
+		$indeximage_select -> addOption ('', '----------');
+		$indeximage_select->addOptionArray($graph_array);
+		$indeximage_select->setExtra("onchange='showImgSelected(\"image\", \"imgurl\", \"" . $path . "\", \"\", \"" . XOOPS_URL . "\")'");
+		$indeximage_tray = new XoopsFormElementTray(_AM_DEBASER_FCATEGORY_CIMAGE, '&nbsp;');
+		$indeximage_tray->addElement($indeximage_select);
+		$indeximage_tray->addElement(new XoopsFormFile('', 'catfile', 0));
 
-    /* function for saving new subcategories */
-    function newsubgenresave()
-    {
-        global $xoopsDB;
+		if (!empty($imgurl)) $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . "/" . $path . "/" . $imgurl . "' name='image' id='image' alt='' />"));
+		else $indeximage_tray->addElement(new XoopsFormLabel('', "<br /><br /><img src='" . XOOPS_URL . "/uploads/blank.gif' name='image' id='image' alt='' />"));
 
-        $xoopsDB->query('
-	INSERT INTO ' . $xoopsDB->prefix('debaser_genre') . ' (subgenreid, genretitle) 
-	VALUES (' . (int)$_POST['subgenrefrom'] . ', ' . $xoopsDB->quoteString($_POST['subgenrenew']) . ') ');
+		$modform->addElement($indeximage_tray);
+		$subtree = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+		ob_start();
+		$subtree->makeDebaserMySelBox('textcattitle', 'textcattitle', $subgenreid, 1, 'subgenreid');
+		$subgenre = new XoopsFormLabel(_AM_DEBASER_SUBCAT, ob_get_contents());
+		ob_end_clean();
+		$modform->addElement($subgenre);
+		$modform->addElement(new XoopsFormHidden('genreid', $catid));
+		$modform->addElement(new XoopsFormHidden('op', 'modCatS'));
 
-        $notificationHandler = xoops_getHandler('notification');
-        $tags = array();
-        $tags['GENRE_NAME'] = $_POST['subgenrenew'];
-        $notificationHandler->triggerEvent('global', 0, 'new_genre', $tags);
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			foreach ($langlist as $languagedesc) {
+				$langresult = $xoopsDB->query("SELECT textcattext FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = '$languagedesc' AND textcatid = ".intval($catid)."");
+				list ($description) = $xoopsDB->fetchRow($langresult);
+				$languagedesc = get_debaserwysiwyg(_AM_DEBASER_DESCLANGUAGE.$languagedesc, $languagedesc.'_description', $description, '100%', '400px', 'hiddentext');
+				$modform->addElement($languagedesc);
+				unset($languagedesc);
+			}
+  		} else {
+			$langresult = $xoopsDB->query("SELECT textcattext FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = ".$xoopsDB->quote($xoopsConfig['language'])." AND textcatid = ".intval($catid)."");
+			list ($description) = $xoopsDB->fetchRow($langresult);
+  			$modform->addElement(get_debaserwysiwyg(_AM_DEBASER_CATDESCRIPTION, 'description', $description, 15, 60));
+		}
 
-        redirect_header('index.php', 1, _AM_DEBASER_DBUPDATE);
-    }
-/* ------------------------------------------ */
+		$modform->addElement(new XoopsFormText(_AM_DEBASER_WEIGHT, 'catweight', 4, 4, $catweight));
+		$button_tray = new XoopsFormElementTray( '', '' );
+		$submitmod = new XoopsFormButton('', 'modsubmit', _SUBMIT, 'submit');
+		$deletemod = new XoopsFormButton('', 'delsubmit', _DELETE, 'submit');
+		$deletemod->setExtra('onclick="this.form.elements.op.value=\'delCat\'"');
+		$cancelmod = new XoopsFormButton('', 'cancelsubmit', _CANCEL, 'cancel');
+		$button_tray->addElement($submitmod);
+		$button_tray->addElement($deletemod);
+		$button_tray->addElement($cancelmod);
+		$modform->addElement($button_tray);
+		$modform->display();
 
-    xoops_cp_header();
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$xoTheme->addScript(DEBASER_UJS.'/functions.js', array('type' => 'text/javascript'), null);
+			$multijs = 'window.onload = function() {';
 
-    if (!isset($op)) {
-        $op = '';
-    }
+		foreach ($langlist as $wotever) {
+			$trnodetitle = $wotever.'_title';
+			$trnodedesc = $wotever.'_description';
+			$multijs .= 'var '.$trnodetitle.' = document.getElementById("'.$trnodetitle.'").parentNode.parentNode;
+			'.$trnodetitle.'.style.display="none";
+			var '.$trnodedesc.' = document.getElementById("'.$trnodedesc.'").parentNode.parentNode;
+			'.$trnodedesc.'.style.display="none";';
+		}
+		$multijs .= '}';
+		$xoTheme->addScript(null, array('type' => 'text/javascript'), $multijs);
+	}
+	}
 
-    switch ($op) {
+	// function for saving modified categories
+	function modCatS() {
 
-        case 'default':
-        default:
-        genremanager();
-        break;
-        
-        case 'deletegenre':
-        deletegenre();
-        break;
+		global $xoopsDB, $myts, $xoopsModuleConfig, $xoopsConfig;
 
-        case 'editgenre':
-        editgenre();
-        break;
+		if (isset($_FILES['catfile']) && !empty($_FILES['catfile']['name'])) {
+		include_once XOOPS_ROOT_PATH.'/class/uploader.php';
 
-        case 'editgenresave':
-        editgenresave();
-        break;
+		$uploaddir = DEBASER_ROOT.'/images/category/';
 
-        case 'newgenresave':
-        newgenresave();
-        break;
-    
-        case 'newsubgenresave':
-        newsubgenresave();
-        break;
-    }
+		$allowed_mimetypes = array('image/gif', 'image/jpeg', 'image/pjpeg', 'image/x-png');
 
-    xoops_cp_footer();
+		$uploader = new XoopsMediaUploader($uploaddir, $allowed_mimetypes, $xoopsModuleConfig['catimagefsize'], $xoopsModuleConfig['shotwidth'], $xoopsModuleConfig['shotheight']);
+		if ($uploader->fetchMedia($_POST['xoops_upload_file'][0])) {
+			if (!$uploader->upload()) {
+				echo $uploader->getErrors();
+			} else {
+				$imgurl = $uploader->getSavedFileName();
+			}
+		} else {
+			echo $uploader->getErrors();
+		}
+		} else {
+			$imgurl = $_POST['imgurl'];
+		}
+
+		// the genre cannot be subcategory of itself so we have to set is as main category
+		if ($_POST['genreid'] == $_POST['subgenreid'])
+			$subgenreid = 0;
+		else
+			$subgenreid = $_POST['subgenreid'];
+
+		if ($xoopsModuleConfig['multilang'] == 0) {
+			$title = $_POST['title'];
+			$description = $_POST['description'];
+		} else {
+			$titleadder = $xoopsConfig['language'].'_title';
+			$title = $_POST[$titleadder];
+			$langlist = XoopsLists::getLangList();
+			$aa = implode(',', $langlist);
+			$bb = explode(',', $aa);
+		}
+
+		$result = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_genre')." SET genretitle = ".$xoopsDB->quoteString($title).", imgurl = ".$xoopsDB->quoteString($imgurl).", subgenreid = ".intval($subgenreid).", catweight = ".intval($_POST['catweight'])." WHERE genreid = ".intval($_POST['genreid'])." ");
+
+		if ($xoopsModuleConfig['multilang'] == 0) {
+		$result2 = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textcattitle = ".$xoopsDB->quoteString($title).", textcattext = ".$xoopsDB->quoteString($description).", textcatid = ".intval($_POST['genreid']).", textcatsubid = ".intval($subgenreid)." WHERE textcatid = ".intval($_POST['genreid'])." ");
+		} else {
+			$i = 0;
+			foreach ($langlist as $langcontent) {
+				$posttitle = $bb[$i].'_title';
+				$postdescription = $bb[$i].'_description';
+				$language = $bb[$i];
+
+				if ($_POST[$posttitle] != '' && $_POST[$postdescription] != '') {
+					$getlang = $xoopsDB->query("SELECT textcatid FROM ".$xoopsDB->prefix('debaser_text')." WHERE textcatid = ".intval($_POST['genreid'])." AND language = ".$xoopsDB->quote("$bb[$i]")."");
+					$getlangs = $xoopsDB->getRowsNum($getlang);
+
+					if ($getlangs == 1) {
+					$result2 = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textcatid = ".intval($_POST['genreid']).", textcatsubid = ".intval($subgenreid).", textcattitle = ".$xoopsDB->quoteString($_POST[$posttitle]).", textcattext = ".$xoopsDB->quoteString($_POST[$postdescription]).", language = ".$xoopsDB->quoteString("$language")." WHERE textcatid = ".intval($_POST['genreid'])." AND language = ".$xoopsDB->quoteString("$language")."");
+					} else {
+					$result3 = $xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textcatid, textcatsubid, textcattitle, textcattext, language) VALUES (".intval($_POST['genreid']).", ".intval($subgenreid).", ".$xoopsDB->quoteString($_POST[$posttitle]).", ".$xoopsDB->quoteString($_POST[$postdescription]).", ".$xoopsDB->quoteString("$language").")");
+					}
+				}
+				$i++;
+
+				unset($posttitle);
+				unset($postdescription);
+				unset($language);
+			}
+		}
+
+		if (!$result || !$result2) redirect_header('category.php?op=debaserCatIndex', 2, _AM_DEBASER_DBERROR);
+		else redirect_header('category.php?op=debaserCatIndex', 2, _AM_DEBASER_DBUPDATE);
+	}
+
+	// function for deleting categories
+	function delCat() {
+
+		global $xoopsDB, $xoopsModuleConfig, $xoopsModule, $groups, $module_id;
+
+		$mytree = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid', '', '');
+
+		$cid =  isset($_POST['genreid']) ? intval($_POST['genreid']) : intval($_GET['genreid']);
+		$ok =  isset($_POST['ok']) ? intval($_POST['ok']) : 0;
+
+		if (@array_intersect($xoopsModuleConfig['owndir'], $groups)) $owndir = 'yes';
+		else $owndir = 'no';
+
+		if ($ok == 1) {
+			//get all subcategories under the specified category
+			$arr = $mytree->getDebaserAllChildId($cid);
+			$lcount = count($arr);
+
+			for ($i = 0; $i < $lcount; $i++) {
+			//get all downloads in each subcategory
+			$result = $xoopsDB->query("SELECT xfid, uid, filename, haslofi FROM ".$xoopsDB->prefix('debaser_files')." WHERE genreid = ".$arr[$i]."");
+			//now for each download, delete the text data and vote ata associated with the download
+				while (list($lid, $uid, $filename, $haslofi) = $xoopsDB->fetchRow($result)) {
+					$xoopsDB->query(sprintf("DELETE FROM %s WHERE lid = %u", $xoopsDB->prefix('debaservotedata'), $lid));
+					$xoopsDB->query(sprintf("DELETE FROM %s WHERE xfid = %u", $xoopsDB->prefix('debaser_files'), $lid));
+					// delete the files
+					if ($owndir == 'yes') $dir = 'user_'.$uid.'_/';
+					else $dir = '';
+
+					@unlink(DEBASER_RUP.'/'.$dir.$filename);
+					if ($haslofi == 1) @unlink(DEBASER_RUP.'/'.$dir.'lofi_'.$filename);
+					// delete comments
+					xoops_comment_delete($xoopsModule->getVar('mid'), $lid);
+				}
+
+			//all downloads for each subcategory is deleted, now delete the subcategory data
+			$xoopsDB->query(sprintf("DELETE FROM %s WHERE genreid = %u", $xoopsDB->prefix('debaser_genre'), $arr[$i]));
+			$xoopsDB->query(sprintf("DELETE FROM %s WHERE textcatid = %u", $xoopsDB->prefix('debaser_text'), $arr[$i]));
+			}
+
+			//all subcategory and associated data are deleted, now delete category data and its associated data
+			$result = $xoopsDB->query("SELECT xfid, uid, filename, haslofi FROM ".$xoopsDB->prefix("debaser_files")." WHERE genreid=".$cid."");
+			while(list($lid, $uid, $filename, $haslofib) = $xoopsDB->fetchRow($result)){
+				$sql = sprintf("DELETE FROM %s WHERE xfid = %u", $xoopsDB->prefix("debaser_files"), $lid);
+				$xoopsDB->query($sql);
+
+				// delete the files
+				if ($owndir == 'yes') $dir = 'user_'.$uid.'_/';
+				else $dir = '';
+
+				@unlink(DEBASER_RUP.'/'.$dir.$filename);
+				if ($haslofib == 1) @unlink(DEBASER_RUP.'/'.$dir.'lofi_'.$filename);
+				// delete comments
+				xoops_comment_delete($xoopsModule->getVar('mid'), $lid);
+				$xoopsDB->query(sprintf("DELETE FROM %s WHERE lid = %u", $xoopsDB->prefix('debaservotedata'), $lid));
+			}
+			$xoopsDB->query(sprintf("DELETE FROM %s WHERE genreid = %u", $xoopsDB->prefix('debaser_genre'), $cid));
+			$xoopsDB->query(sprintf("DELETE FROM %s WHERE textcatid = %u", $xoopsDB->prefix('debaser_text'), $cid));
+			redirect_header("category.php?op=debaserCatIndex", 2, _AM_DEBASER_CATDELETED);
+			exit();
+			} else {
+				xoops_cp_header();
+				echo "<b>"._AM_DEBASER_DELCAT."</b>";
+				xoops_confirm(array('op' => 'delCat', 'genreid' => $cid, 'ok' => 1), 'category.php', _AM_DEBASER_DELCCONF);
+				xoops_cp_footer();
+			}
+	}
+
+	if(!isset($_POST['op'])) $op = isset($_GET['op']) ? $_GET['op'] : 'default';
+	else $op = $_POST['op'];
+
+	switch ($op) {
+
+		case 'addCat':
+		addCat();
+		break;
+
+		case 'editCat':
+		xoops_cp_header();
+		editCat();
+		xoops_cp_footer();
+		break;
+
+		case 'delCat':
+		delCat();
+		break;
+
+		case 'modCat':
+		xoops_cp_header();
+		modCat();
+		xoops_cp_footer();
+		break;
+
+		case 'modCatS':
+		modCatS();
+		break;
+
+		case 'default':
+		default:
+		xoops_cp_header();
+		debaserCatIndex();
+		xoops_cp_footer();
+		break;
+	}
+?>

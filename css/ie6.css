@@ -1,0 +1,21 @@
+/* 
+IE& ohne JavaScript fuer diesen seltenen fall, geben wir uns keine muehe 
+*/
+#nav ol li {
+border: 0	
+}
+#nav ol li a, #nav ol li strong {
+border: 1px solid #ccc;
+border-bottom: 0
+}
+#nav li.active ol, #nav li.activepath ol {
+position: static
+}
+#nav li.active ol li, #nav li.activepath ol li {
+padding-left: 10px;
+width: 140px
+}
+#nav ol li ol li a:active {
+position: static;
+margin-left: 0
+}

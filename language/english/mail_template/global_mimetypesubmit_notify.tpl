@@ -1,6 +1,6 @@
 Hello {X_UNAME},
 
-someone tried to submit a file with the unknown mimetype "{MIME_NAME}" to {X_SITENAME}.
+the following user {MIME_ID} tried to submit a file with the unknown mimetype to {X_SITENAME}. Get in contact with this user to get more information.
 
 -----------
 

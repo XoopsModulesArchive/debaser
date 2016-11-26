@@ -1,0 +1,16 @@
+<!--[if IE]><object id="MediaPlayer1" classid="CLSID:22d6f312-b0f6-11d0-94ab-0080c74c7e95" codebase="http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab# Version=5,1,52,701" standby="Loading Microsoft Windows Media Player components..." type="application/x-oleobject" width="<@width@>" height="<@height@>">
+<param name="fileName" value="<@mp3file@>" />
+<param name="animationatStart" value="true" />
+<param name="transparentatStart" value="true" />
+<param name="autoStart" value="<@autostart@>" />
+<param name="showControls" value="true" />
+<param name="Volume" value="-300" /><![endif]-->
+<object class="playerdisplay" type="application/x-mplayer2" data="<@mp3file@>" width="<@width@>" height="<@height@>">
+<param name="fileName" value="<@mp3file@>" />
+<param name="animationatStart" value="true" />
+<param name="transparentatStart" value="true" />
+<param name="autoStart" value="<@autostart@>" />
+<param name="showControls" value="true" />
+<param name="Volume" value="-300" />
+</object>
+<!--[if IE]></object><![endif]-->

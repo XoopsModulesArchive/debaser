@@ -1,0 +1,24 @@
+<div id="jeroenaudio">
+<a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this player.
+</div>
+<script type="text/javascript" src="<@urltoscript@>swfobject.js"></script>
+<script type="text/javascript">
+var s2 = new SWFObject("<@urltoscript@>player.swf","playlist","<@width@>","<@height@>","7");
+s2.addParam("allowfullscreen","true");
+s2.addParam("allowscriptaccess","always");
+s2.addParam("flashvars","file=<@mp3file@>&autostart=<@autostart@>&shuffle=false&repeat=list");
+//s2.addVariable("displaywidth","330");
+//s2.addVariable("displayheight","330");
+//s2.addParam("backcolor","0xffffff");
+//s2.addParam("frontcolor","0x666666");
+//s2.addParam("lightcolor","0xbd972d");
+//s2.addParam("screencolor","0xAFB7AA");
+//s2.addParam("autostart","true");
+//s2.addParam("shuffle","false");
+//s2.addParam("autoscroll","true");
+//s2.addParam("repeat","list");
+//s2.addVariable("overstretch","fit");
+//s2.addVariable("width","328");
+//s2.addVariable("height","20");
+s2.write("jeroenaudio");
+</script>

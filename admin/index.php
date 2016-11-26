@@ -1,5 +1,4 @@
 <?php
-// $Id: admin/index.php,v 0.50 2004/06/30 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,716 +24,595 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/admin_header.php';
+    include 'admin_header.php';
     include XOOPS_ROOT_PATH.'/class/xoopsformloader.php';
-    include_once __DIR__ . '/../include/functions.php';
-    include_once XOOPS_ROOT_PATH.'/modules/debaser/class/debasertree.php';
-    include_once XOOPS_ROOT_PATH.'/class/xoopslists.php';
-    include __DIR__ . '/../class/uploader.php';
+	include_once XOOPS_ROOT_PATH.'/class/xoopslists.php';
+	include_once DEBASER_CLASS.'/debasertree.php';
+	include_once XOOPS_ROOT_PATH . '/class/pagenav.php';
+	include_once DEBASER_RINC.'/functions.php';
 
-    /* assigning get-variables to work with register_globals off */
+	// function for displaying debaser administration
+	function debaseradmin() {
 
-    if (isset($_GET['op']) && $_GET['op'] == 'playermanager') {
-        $op = 'playermanager';
-    }
+		global $xoopsDB, $xoopsConfig, $xoopsModuleConfig;
 
-    if (isset($_GET['op']) && $_GET['op'] == 'editplayer') {
-        $op = 'editplayer';
-        $playertype = $_GET['playertype'];
-    }
+		$result = $xoopsDB->query("SELECT xfid FROM ".$xoopsDB->prefix('debaser_files')." WHERE approved = 0");
+		$toapprove = $xoopsDB->getRowsNum($result);
+		$resultgenre = $xoopsDB->query("SELECT genreid FROM ".$xoopsDB->prefix('debaser_genre')."");
+		$anycats = $xoopsDB->getRowsNum($resultgenre);
+		$resultbroken = $xoopsDB->query("SELECT brokenid FROM ".$xoopsDB->prefix('debaser_broken')."");
+		$anybroken = $xoopsDB->getRowsNum($resultbroken);
 
-    if (isset($_POST['op']) && $_POST['op'] == 'showmpegs') {
-        $op = 'showmpegs';
-    }
+		if (strtoupper(substr(PHP_OS, 0, 3)) != 'WIN') {
+			if (function_exists('apache_get_modules')) {
+				if (in_array('mod_security', apache_get_modules()) && !file_exists(DEBASER_ROOT.'/.htaccess') && !empty($xoopsModuleConfig['allowflashupload'])) echo _AM_DEBASER_MODSEC;
+			}
+		}
 
-    if (isset($_GET['op']) && $_GET['op'] == 'editmpegs') {
-        $op = 'editmpegs';
-        $mpegid = $_GET['mpegid'];
-    }
+		echo '<table class="outer" width="100%" id="indexshowme"><tr>';
 
-    if (isset($_GET['op']) && $_GET['op'] == 'batchadd') {
-        $op = 'batchadd';
-    }
+		if ($toapprove < 1) $approve = '<td class="odd" style="width:50%;"><strong>'._AM_DEBASER_TOAPPROVE.'</strong>&nbsp;<span style="color:#ff0000; font-weight:bold;">0</span></td>';
+		else $approve = '<td class="odd" style="width:50%;"><strong>'._AM_DEBASER_TOAPPROVE.'</strong>&nbsp;<a href="index.php?op=approve" style="color:#ff0000; text-decoration:underline;">'.$toapprove.'</a></td>';
 
-    if (isset($_GET['op']) && $_GET['op'] == 'singleupload') {
-        $op = 'singleupload';
-    }
+		if ($anybroken < 1) $tofix = '<td class="odd" style="width:50%;"><strong>'._AM_DEBASER_TOFIX.'</strong>&nbsp;<span style="color:#ff0000; font-weight:bold;">0</span></td>';
+		else $tofix = '<td class="odd" style="width:50%;"><strong>'._AM_DEBASER_TOFIX.'</strong>&nbsp;<a href="maintenance.php?op=listbroken" style="color:#ff0000; text-decoration:underline;">'.$anybroken.'</a></td>';
 
-    if (isset($_GET['op']) && $_GET['op'] == 'approve') {
-        $op = 'approve';
-    }
+		echo $approve.$tofix.'</tr></table><br />';
+		debaser_adminMenu();
+		echo '<br />';
+		if ($anycats) {
+			$catform = new XoopsThemeForm(_AM_DEBASER_SHOWSORT, 'genrelist', 'index.php');
+			$genre_tray = new XoopsFormElementTray( _AM_DEBASER_GENRE, '' );
+			$genre_tray->addElement( new XoopsFormHidden('op', 'showmpegs') );
+			$mytreechose = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+			ob_start();
+			$mytreechose->makeDebaserMySelBox('textcattitle', 'textcattitle', 0, 0, 'genrefrom');
+			$genre_tray->addElement(new XoopsFormLabel('', ob_get_contents()));
+			ob_end_clean();
+			$genre_tray->addElement(new XoopsFormButton('', 'genrelistsubmit', _SUBMIT, 'submit'));
+			$catform->addElement($genre_tray);
+			$catform->display();
+		}
+	}
 
-    if (isset($_POST['op']) && $_POST['op'] == 'saveapprove') {
-        $op = 'saveapprove';
-    }
+	// function for moving songs from one genre to another
+	function movesongs() {
 
-    if (isset($_GET['op']) && $_GET['op'] == 'deleteplayer') {
-        $op = 'deleteplayer';
-    }
+		global $xoopsDB;
 
-    if (isset($_GET['op']) && $_GET['op'] == 'deletesong') {
-        $op = 'deletesong';
-    }
-    
-    if (isset($_POST['op']) && $_POST['op'] == 'deletesong') {
-        $op = 'deletesong';
-    }
+		$resulta = $xoopsDB->query("SELECT xfid, FROM ".$xoopsDB->prefix('debaser_files')." WHERE genreid = ".intval($_POST['genrefrom'])."");
+		$counted = $xoopsDB->getRowsNum($resulta);
 
-    if (isset($_POST['op']) && $_POST['op'] == 'changeplayer') {
-        $op = 'changeplayer';
-    }
+		$resultb = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_files')." SET genreid=".intval($_POST['genreto'])." WHERE genreid = ".intval($_POST['genrefrom'])."");
 
-    if (isset($_POST['op']) && $_POST['op'] == 'newplayer') {
-        $op = 'newplayer';
-    }
+		$resultc = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_genre')." SET total = total+".intval($counted)." WHERE genreid = ".intval($_POST['genreto'])."");
 
-    if (isset($_POST['op']) && $_POST['op'] == 'saveeditmpegs') {
-        $op = 'saveeditmpegs';
-    }
+		$resultc = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_genre')." SET total = total-".intval($counted)." WHERE genreid = ".intval($_POST['genrefrom'])."");
 
-    if (isset($_POST['op']) && $_POST['op'] == 'movesongs') {
-        $op = 'movesongs';
-    }
+		if ($resultb) redirect_header('index.php', 2, _AM_DEBASER_MOVED);
+		else redirect_header('index.php', 2, _AM_DEBASER_DBERROR);
+	}
 
+	// function for listing mpegs of a specific genre
+	function showmpegs() {
+
+		global $xoopsDB, $genrelist, $xoopsModule, $xoopsConfig, $xoopsModuleConfig, $imagearray, $xoTheme;
+
+		if ($xoopsModuleConfig['uselame'] == 1) $uselame = 1;
+		else $uselame = 0;
+
+		$start = isset($_GET['start']) ? intval($_GET['start']) : 0;
+		$thisgenreid = isset($_POST['genrefrom']) ? intval($_POST['genrefrom']) : intval($_GET['genrefrom']);
+
+		$result = "SELECT xfid, filename, artist, title, genreid, approved, fileext, uid, haslofi FROM ".$xoopsDB->prefix('debaser_files')." WHERE genreid=".intval($thisgenreid)." AND approved = 1 ORDER BY artist ASC ";
+
+		$file_array = $xoopsDB -> query($result, $xoopsModuleConfig['indexperpage'], $start);
+		$file_num = $xoopsDB -> getRowsNum($xoopsDB->query($result));
+
+		debaser_adminMenu();
+		echo '<div id="loading">Processing... </div>';
+		$moveform = new XoopsThemeForm(_AM_DEBASER_GENREMOVE, 'movesongs', 'index.php');
+		$move_tray = new XoopsFormElementTray('', '');
+		$move_tray->addElement( new XoopsFormHidden( 'op', 'movesongs' ) );
+		$mytreechose = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+		ob_start();
+		$mytreechose->makeDebaserMySelBox('textcattitle', 'textcattitle', $thisgenreid, 0, 'genrefrom');
+		$move_tray->addElement(new XoopsFormLabel(_AM_DEBASER_GENREFROM, ob_get_contents()));
+		ob_end_clean();
+		$mytreechose2 = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsModuleConfig['masterlang']), 'AND textfileid = 0', false);
+		ob_start();
+		$mytreechose2->makeDebaserMySelBox('textcattitle', 'textcattitle', 0 , 0, 'genreto');
+		$move_tray->addElement(new XoopsFormLabel(_AM_DEBASER_GENRETO, ob_get_contents()));
+		ob_end_clean();
+		$move_tray->addElement(new XoopsFormButton('', 'movesubmit', _SUBMIT, 'submit'));
+		$moveform->addElement($move_tray);
+		$moveform->display();
+
+		if ($file_num > 0) {
+			echo '<br /><form name="reencodeform" id="reencodeform" action="javascript:void(null);" method="post"><table width="100%" class="outer" cellspacing="1" cellpadding="0" align="center" id="listfiles"> ';
+			while ($sqlfetch = $xoopsDB->fetchArray($file_array)) {
+
+				if ($sqlfetch['haslofi'] != '' && $sqlfetch['haslofi'] != 0) {
+					$haslofi = '<span style="font-weight:bold; color:#ff0000"> + LoFi</span>';
+					$lofi = 1;
+				} else {
+					$haslofi = '';
+					$lofi = 0;
+				}
+
+				echo '<tr>
+				<td class="odd" width="70" align="center">'._AM_DEBASER_ID.' '.$sqlfetch['xfid'].'</td>
+				<td class="even">'.$sqlfetch['artist'].' - '.$sqlfetch['title'].$haslofi.'<br /><div id="rewritewarn'.$sqlfetch['xfid'].'"></div></td>';
+
+				if ($uselame == 1 && $sqlfetch['fileext'] == 'mp3') echo '<td class="even" style="width:60px;text-align:center"><div style="float:left" id="showlofiok'.$sqlfetch['xfid'].'"></div> <input title="'._AM_DEBASER_MAKELOFI.'" type="checkbox" name="reencode'.$sqlfetch['xfid'].'" id="reencode'.$sqlfetch['xfid'].'" value="'.$sqlfetch['xfid'].'" class="reencodeclass" style="float:right" /></td>';
+				else echo '<td class="even" style="width:60px;text-align:center"></td>';
+
+				echo '<td class="even" align="center" width="40"><a href="index.php?op=editmpegs&amp;mpegid='.$sqlfetch['xfid'].'">'.$imagearray['editimg'].'</a></td><td class="odd" align="center" width="40"><a href="index.php?op=deletesong&amp;mpegid='.$sqlfetch['xfid'].'&amp;delfile='.$sqlfetch['filename'].'&amp;uid='.$sqlfetch['uid'].'&amp;lofi='.$lofi.'&amp;genreid='.$sqlfetch['genreid'].'">'.$imagearray['deleteimg'].'</a></td></tr>';
+			}
+			echo '</table></form>';
+
+				include_once XOOPS_ROOT_PATH . '/class/pagenav.php';
+$page = ($file_num > $xoopsModuleConfig['indexperpage']) ? _AM_DEBASER_MINDEX_PAGE : '';
+	$pagenav = new XoopsPageNav($file_num, $xoopsModuleConfig['indexperpage'], $start, 'op=showmpegs&amp;genrefrom='.$thisgenreid.'&amp;start');
+	echo "<div align='right' style='padding: 8px;'>" . $page . '' . $pagenav -> renderNav() . '</div>';
+
+	$xoTheme->addScript(null, array('type' => 'text/javascript'), '$(document).ready(function () { $("input.reencodeclass").click(function () { $("#showlofiok"+this.value).load("'.DEBASER_URL.'/ajaxed.php", { action : "transcode", id : this.value }); }); }); $(\'#loading\').ajaxStart(function() {
+$(this).show(); }).ajaxStop(function() { $(this).hide(); });');
+		}
+		else {
+			redirect_header('index.php', 2, _AM_DEBASER_NOSONGAVAIL);
+		}
+	}
+
+	function editmpegs() {
+
+		global $xoopsDB, $mpegid, $artist, $genrelist, $xoopsModule, $xoopsModuleConfig, $xoopsConfig, $xoopsUser, $xoTheme;
+
+		$result = $xoopsDB->query("SELECT xfid, filename, title, artist, album, year, track, genreid, length, approved, bitrate, frequence, fileext, uid, linkcode FROM ".$xoopsDB->prefix('debaser_files')." WHERE xfid=".intval($_GET['mpegid'])."");
+
+		list($xfid, $filename, $title, $artist, $album, $year, $track, $genreid, $length, $approved, $bitrate, $frequence, $fileext, $uid, $linkcode) = $xoopsDB->fetchRow($result);
+
+		$result2 = $xoopsDB->query("SELECT mime_id FROM ".$xoopsDB->prefix('debaser_mimetypes')." WHERE mime_ext = ".$xoopsDB->quote($fileext)."");
+		list($fileextid) = $xoopsDB->fetchRow($result2);
+
+		debaser_adminMenu();
+		$edform = new XoopsThemeForm(_AM_DEBASER_EDITMPEG, 'editmpegform', 'index.php');
+
+		$mytreefileext = new debaserTree($xoopsDB->prefix('debaser_mimetypes'), 'mime_id', 'mime_pid', '', '', false);
+		ob_start();
+		$mytreefileext->makeDebaserMySelBox('mime_ext', 'mime_ext', $fileextid, 0, 'fileext');
+		$formfileext = new XoopsFormLabel(_AM_DEBASER_FILETYPE, ob_get_contents());
+		ob_end_clean();
+		$edform->addElement($formfileext);
+		$edform->addElement(new XoopsFormText(_AM_DEBASER_ARTIST, 'artist', 50, 50, $artist));
+		$edform->addElement(new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 50, $title));
+
+		if ($linkcode != '') {
+			if (strlen($linkcode) > 255) {
+				$edform->addElement(new XoopsFormTextArea(_AM_DEBASER_TYPEOFLINK, 'linkcode', str_replace('\\', '', $linkcode), 10, 50));
+			} else {
+				$edform->addElement(new XoopsFormText(_AM_DEBASER_TYPEOFLINK, 'linkcode', 50, 255, $linkcode));
+			}
+		} else {
+			$edform->addElement(new XoopsFormHidden('linkcode', ''));
+		}
+
+		$edform->addElement(new XoopsFormText(_AM_DEBASER_ALBUM, 'album', 50, 50, $album));
+		$edform->addElement(new XoopsFormText(_AM_DEBASER_YEAR, 'year', 4, 4, $year));
+		$edform->addElement(new XoopsFormHidden('olduid', $uid));
+		$edform->addElement(new XoopsFormHidden('mpegid', $_GET['mpegid']));
+		$edform->addElement(new XoopsFormHidden('filename', $filename));
+
+	if ($xoopsModuleConfig['multilang'] == 0) {
+		$result = $xoopsDB->query("SELECT textfiletext FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid = ".intval($xfid)." AND language = ".$xoopsDB->quote($xoopsConfig['language'])."");
+		list($description) = $xoopsDB->fetchRow($result);
+		$edform->addElement(get_debaserwysiwyg(_AM_DEBASER_COMMENT, 'description', $description, 15, 60));
+		} else {
+   		$langlist = XoopsLists::getLangList();
+			$flaglist = '';
+			foreach ($langlist as $flags) {
+				$flaglist .= '<img onclick="toggleMe3(\'editmpegform\', \''.$flags.'\')" src="'.DEBASER_UIMG.'/'.$flags.'.gif" alt="'.$flags.'" title="'.$flags.'" id="'.$flags.'" /> ';
+			}
+			$edform->addElement(new XoopsFormLabel(_AM_DEBASER_LANGSELECT, $flaglist));
+
+			foreach ($langlist as $key => $languagedescription) {
+				$langresult = $xoopsDB->query("SELECT textfiletext FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = '$languagedescription' AND textfileid = ".intval($xfid)."");
+				list ($description) = $xoopsDB->fetchRow($langresult);
+				$languagedescription = get_debaserwysiwyg(_AM_DEBASER_DESCLANGUAGE.$languagedescription, $languagedescription .'_description', $description, '100%', '400px', 'hiddentext');
+				$edform->addElement($languagedescription);
+				unset($languagedescription);
+			}
+	}
+
+
+	$edform->addElement(new XoopsFormText(_AM_DEBASER_TRACK, 'track', 3, 3, $track));
+
+	$mytreechose = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsConfig['language']), 'AND textfileid = 0', false);
+	ob_start();
+	$mytreechose->makeDebaserMySelBox('textcattitle', 'textcattitle', $genreid, 0, 'genrefrom');
+	$formgenre = new XoopsFormLabel(_AM_DEBASER_GENRE, ob_get_contents());
+	ob_end_clean();
+	$edform->addElement($formgenre);
+	$edform->addElement(new XoopsFormText(_AM_DEBASER_LENGTH, 'length', 5, 5, $length));
+	$edform->addElement(new XoopsFormText(_AM_DEBASER_BITRATE, 'bitrate', 3, 3, $bitrate));
+	$edform->addElement(new XoopsFormText(_AM_DEBASER_FREQUENCY, 'frequence', 5, 5, $frequence));
+	$edform->addElement(new XoopsFormRadioYN(_AM_DEBASER_APPROVE2, 'approved', 1, _YES, _NO));
+	$edform->addElement(new XoopsFormHidden('op', 'saveeditmpegs'));
+	$edform->addElement(new XoopsFormSelectUser(_AM_DEBASER_OWNER, 'uid', false, $uid, '1', false));
+	$edform->addElement(new XoopsFormButton( '', '', _SUBMIT, 'submit' ));
+	$edform->display();
+
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$xoTheme->addScript(DEBASER_UJS.'/functions.js', array('type' => 'text/javascript'), null);
+			$multijs = 'window.onload = function() {';
+
+		foreach ($langlist as $wotever) {
+			$trnodedesc = $wotever.'_description';
+			$multijs .= 'var '.$trnodedesc.' = document.getElementById("'.$trnodedesc.'").parentNode.parentNode;
+			'.$trnodedesc.'.style.display="none";';
+		}
+		$multijs .= '}';
+		$xoTheme->addScript(null, array('type' => 'text/javascript'), $multijs);
+	}
+
+	}
 /* -- */
 
-/* function for displaying debaser administration */
-    function debaseradmin()
-    {
-        global $xoopsDB;
+	/* function for approving mpegs */
+	function approve() {
 
-        debaseradminMenu(0, _AM_DEBASER_SHOWFILES);
+	global $xoopsDB, $genrelist, $xoopsModule, $xoopsModuleConfig, $xoopsConfig, $xoTheme;
 
-        echo '<div style="float:left; width:100%;">';
-        echo '<table class="outer" width="100%">
-			<tr>
-			<td class="odd"><strong>'._AM_DEBASER_TOAPPROVE.'</strong>&nbsp;<a href="index.php?op=approve" style="color:#ff0000; text-decoration:underline;">';
+	$filelist = array();
+	$sql = "SELECT xfid, filename, artist, title, album, year, track, genreid, length, bitrate, frequence, approved, fileext, uid, haslofi FROM ".$xoopsDB->prefix('debaser_files')." WHERE approved = 0 ORDER BY artist ASC ";
 
-        $sql = 'SELECT xfid from ' . $xoopsDB->prefix('debaser_files') . ' WHERE approved = 0';
-        $result = $xoopsDB->query($sql);
-        $toapprove = $xoopsDB->getRowsNum($result);
+	$result = $xoopsDB->query($sql);
 
-        echo ''.$toapprove.'</a></td></tr></table><br />';
+	$hasitems = $xoopsDB -> getRowsNum($result);
 
-        $catform = new XoopsThemeForm(_AM_DEBASER_SHOWSORT, 'genrelist', 'index.php');
-        $genre_tray = new XoopsFormElementTray(_AM_DEBASER_GENRE, '');
-        $genre_tray->addElement(new XoopsFormHidden('op', 'showmpegs'));
-        $mytreechose = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-        ob_start();
-        $mytreechose->debaserSelBox('genretitle', 'genretitle', 0, 0, 'genrefrom');
-        $genre_tray->addElement(new XoopsFormLabel('', ob_get_contents()));
-        ob_end_clean();
-        $genre_tray->addElement(new XoopsFormButton('', 'genrelistsubmit', _AM_DEBASER_GO, 'submit'));
-        $catform->addElement($genre_tray);
-        $catform->display();
+		if ($hasitems > 0) {
+			debaser_adminMenu();
+			while (list($xfid, $filename, $artist, $title, $album, $year, $track, $genreid, $length, $bitrate, $frequence, $approved, $fileext, $uid, $haslofi) = $xoopsDB->fetchRow($result)) {
 
-        echo '</div>';
-    }
-/* -- */
+			$edform = new XoopsThemeForm(_AM_DEBASER_EDITMPEG, 'approveform', xoops_getenv('PHP_SELF'));
 
+			$create_tray = new XoopsFormElementTray('ID '.$xfid, '');
+			$create_tray->addElement( new XoopsFormHidden( 'op', 'deletesong' ) );
+			$create_tray->addElement( new XoopsFormHidden( 'mpegid', $xfid) );
+			$create_tray->addElement( new XoopsFormHidden( 'delfile', $filename) );
+			$butt_delete = new XoopsFormButton( '', '', _DELETE, 'submit' );
+			$butt_delete->setExtra( 'onclick="this.form.elements.op.value=\'deletesong\'"' );
+			$create_tray->addElement( $butt_delete );
+			$edform->addElement($create_tray);
+			$save_tray = new XoopsFormElementTray( '', '' );
+			$butt_save = new XoopsFormButton( '', '', _SUBMIT, 'submit' );
+			$butt_save->setExtra( 'onclick="this.form.elements.op.value=\'saveapprove\'"' );
+			$save_tray->addElement( $butt_save );
 
+      		$file_ext = $xoopsDB->query("SELECT mime_ext FROM ".$xoopsDB->prefix('debaser_mimetypes')."");
+      		$formfileext = new XoopsFormSelect(_AM_DEBASER_FILETYPE, 'fileext', $fileext, 1, false);
+      		while(list($mime_ext) = $xoopsDB->fetchRow($file_ext)) {
+      		$formfileext->addOption($mime_ext);
+      		}
+      		$edform->addElement($formfileext);
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_ARTIST, 'artist', 50, 50, $artist));
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 50, $title));
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_ALBUM, 'album', 50, 50, $album));
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_YEAR, 'year', 4, 4, $year));
+			if ($xoopsModuleConfig['multilang'] == 0) {
+			$result = $xoopsDB->query("SELECT textfiletext FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid = ".intval($xfid)." AND language = ".$xoopsDB->quote($xoopsConfig['language'])."");
+			list($description) = $xoopsDB->fetchRow($result);
+			$edform->addElement(get_debaserwysiwyg(_AM_DEBASER_COMMENT, 'description', $description, 15, 60));
+			} else {
+   		$langlist = XoopsLists::getLangList();
+			$flaglist = '';
+			foreach ($langlist as $flags) {
+				$flaglist .= '<img onclick="toggleMe3(\'editmpegform\', \''.$flags.'\')" src="'.DEBASER_UIMG.'/'.$flags.'.gif" alt="'.$flags.'" title="'.$flags.'" id="'.$flags.'" /> ';
+			}
+			$edform->addElement(new XoopsFormLabel(_AM_DEBASER_LANGSELECT, $flaglist));
 
-/* function for moving songs from one genre to another */
-    function movesongs()
-    {
-        global $xoopsDB;
+			foreach ($langlist as $key => $languagedescription) {
+				$langresult = $xoopsDB->query("SELECT textfiletext FROM ".$xoopsDB->prefix('debaser_text')." WHERE language = '$languagedescription' AND textfileid = ".intval($xfid)."");
+				list ($description) = $xoopsDB->fetchRow($langresult);
+				$languagedescription = get_debaserwysiwyg(_AM_DEBASER_DESCLANGUAGE.$languagedescription, $languagedescription .'_description', $description, '100%', '400px', 'hiddentext');
+				$edform->addElement($languagedescription);
+				unset($languagedescription);
+			}
+			}
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_TRACK, 'track', 3, 3, $track));
 
-        $sqla = 'SELECT genretitle FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE genreid = ' . (int)$_POST['genreto'] . '';
-        $resulta = $xoopsDB->query($sqla);
-        list($togenre) = $xoopsDB->fetchRow($resulta);
+			$mytreechose = new debaserTree($xoopsDB->prefix('debaser_text'), 'textcatid', 'textcatsubid', 'WHERE language = '.$xoopsDB->quoteString($xoopsConfig['language']), 'AND textfileid = 0', false);
+			ob_start();
+			$mytreechose->makeDebaserMySelBox('textcattitle', 'textcattitle', $genreid, 0, "genreid");
+			$formgenre = new XoopsFormLabel(_AM_DEBASER_GENRE, ob_get_contents());
+			ob_end_clean();
+			$edform->addElement($formgenre);
+      $edform->addElement(new XoopsFormText(_AM_DEBASER_LENGTH, 'length', 5, 5, $length));
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_BITRATE, 'bitrate', 3, 3, $bitrate));
+			$edform->addElement(new XoopsFormText(_AM_DEBASER_FREQUENCY, 'frequence', 5, 5, $frequence));
+			$edform->addElement(new XoopsFormRadioYN(_AM_DEBASER_APPROVE2, 'approved', $approved, _YES, _NO));
+			$edform->addElement(new XoopsFormSelectUser(_AM_DEBASER_OWNER, 'uid', false, $uid, '1', false));
+			$edform->addElement(new XoopsFormHidden('olduid', $uid));
+			if ($xoopsModuleConfig['uselame'] == 1) {
+				if ($haslofi == 1) {
+					$yesorno = _YES;
+					$edform->addElement(new XoopsFormHidden('lofi', 'lofi'));
+				} else {
+					$yesorno = _NO;
+				}
+				$edform->addElement(new XoopsFormLabel('lofi', $yesorno));
+			} else {
+				$edform->addElement(new XoopsFormHidden('lofi', 0));
+			}
+			$edform->addElement($save_tray);
+			}
 
-        $sqlb = 'SELECT genretitle FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE genreid = ' . (int)$_POST['genrefrom'] . '';
-        $resultb = $xoopsDB->query($sqlb);
-        list($fromgenre) = $xoopsDB->fetchRow($resultb);
+		$edform->display();
+		if ($xoopsModuleConfig['multilang'] == 1) {
+			$xoTheme->addScript(DEBASER_UJS.'/functions.js', array('type' => 'text/javascript'), null);
+			$multijs = 'window.onload = function() {';
 
-
-        $sql = 'UPDATE ' . $xoopsDB->prefix('debaser_files') . ' SET genre=' . $xoopsDB->quoteString($togenre) . ' WHERE genre=' . $xoopsDB->quoteString($fromgenre) . ' ';
-        $result = $xoopsDB->query($sql);
-
-        if ($result) {
-            redirect_header('index.php', 2, _AM_DEBASER_MOVED);
-        } else {
-            echo 'hatt nicht geklappt';
-        }
-    }
-/* -- */
-
-/* function for listing mpegs of a specific genre */
-    function showmpegs()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
-
-        global $xoopsDB, $genrelist, $xoopsModule;
-
-        $filelist = array();
-        $sql = 'SELECT d.xfid, d.filename, d.artist, d.title, d.genre, d.approved, t.genreid, t.genretitle FROM ' . $xoopsDB->prefix('debaser_files') . ' d, '
-           . $xoopsDB->prefix('debaser_genre') . ' t WHERE t.genreid='
-           . (int)$_POST['genrefrom'] . ' AND t.genretitle=d.genre AND d.approved = 1 ORDER BY d.artist ASC ';
-
-        $result = $xoopsDB->query($sql);
-
-        $hasitems = $xoopsDB -> getRowsNum($result);
-
-        if ($hasitems > 0) {
-            while ($sqlfetch = $xoopsDB->fetchArray($result)) {
-                $filelist['id'] = $sqlfetch['xfid'];
-                $filelist['filename'] = $sqlfetch['filename'];
-                $filelist['artist'] = $sqlfetch['artist'];
-                $filelist['title'] = $sqlfetch['title'];
-                $filelist['genretitle'] = $sqlfetch['genre'];
-                $xoopsTpl->append('filelist', $filelist);
-            }
-        } else {
-            $xoopsTpl->assign('noavailsong', true);
-        }
-
-        $moveform = new XoopsThemeForm(_AM_DEBASER_GENREMOVE, 'movesongs', 'index.php');
-        $move_tray = new XoopsFormElementTray('', '');
-        $move_tray->addElement(new XoopsFormHidden('op', 'movesongs'));
-        $mytreechose = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-        ob_start();
-        $mytreechose->debaserSelBox('genretitle', 'genretitle', $_POST['genrefrom'], 0, 'genrefrom');
-        $move_tray->addElement(new XoopsFormLabel(_AM_DEBASER_GENREFROM, ob_get_contents()));
-        ob_end_clean();
-        $mytreechose2 = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-        ob_start();
-        $mytreechose2->debaserSelBox('genretitle', 'genretitle', 0, 0, 'genreto');
-        $move_tray->addElement(new XoopsFormLabel(_AM_DEBASER_GENRETO, ob_get_contents()));
-        ob_end_clean();
-        $move_tray->addElement(new XoopsFormButton('', 'movesubmit', _SUBMIT, 'submit'));
-        $moveform->addElement($move_tray);
-        $xoopsTpl->assign('movesongs', $moveform->render());
-
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(0, _AM_DEBASER_SHOWFILES.' : '._AM_DEBASER_GENRE.' '.$filelist['genretitle']));
-        $xoopsTpl->display('db:debaser_amshowmpegs.html');
-    }
-/* -- */
-
-/* function for editing mpegs */
-    function editmpegs()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
-
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
-
-        global $xoopsDB, $mpegid, $artist, $genrelist, $xoopsModule, $xoopsModuleConfig;
-
-        $sql =
-        'SELECT d.xfid, d.filename, d.title, d.artist, d.album, d.year, d.addinfo, d.track, d.genre, d.length, d.link, d.approved, d.bitrate, d.frequence, d.fileext, d.weight, t.genreid, t.genretitle
-	FROM ' . $xoopsDB->prefix('debaser_files') . ' d, ' . $xoopsDB->prefix('debaser_genre') . ' t
-	WHERE t.genretitle=d.genre AND xfid=' . (int)$mpegid . '';
-
-        $result = $xoopsDB->query($sql);
-
-        list($xfid, $filename, $title, $artist, $album, $year, $addinfo, $track, $genre, $length, $link, $approved, $bitrate, $frequence, $fileext, $weight, $genreid, $genretitle) = $xoopsDB->fetchRow($result);
-
-        $edform = new XoopsThemeForm(_AM_DEBASER_EDITMPEG, 'editmpegform', xoops_getenv('PHP_SELF'));
-
-        $memberHandler =  xoops_getHandler('member');
-        $group_list = & $memberHandler -> getGroupList();
-        $gpermHandler =  xoops_getHandler('groupperm');
-        $groups = $gpermHandler -> getGroupIds('DebaserFilePerm', $xfid, $xoopsModule -> getVar('mid'));
-        $groups = $groups;
-
-        if ($xoopsModuleConfig['usefileperm'] == 1) {
-            $edform -> addElement(new XoopsFormSelectGroup(_AM_DEBASER_FCATEGORY_GROUPPROMPT, 'groups', true, $groups, 5, true));
-        }
-    
-        $create_tray = new XoopsFormElementTray('', '');
-        $create_tray->addElement(new XoopsFormHidden('op', 'deletesong'));
-        $create_tray->addElement(new XoopsFormHidden('mpegid', $xfid));
-        $create_tray->addElement(new XoopsFormHidden('delfile', $filename));
-        $butt_play = new XoopsFormButton('', '', _AM_DEBASER_PLAY, 'button');
-        $butt_play->setExtra('onclick="javascript:openWithSelfMain(\''.XOOPS_URL.'/modules/debaser/player.php?id='.$xfid.'\',\'player\',10,10)"');
-        $create_tray->addElement($butt_play);
-        $butt_delete = new XoopsFormButton('', '', _DELETE, 'submit');
-        $butt_delete->setExtra('onclick="this.form.elements.op.value=\'deletesong\'"');
-        $create_tray->addElement($butt_delete);
-        $save_tray = new XoopsFormElementTray('', '');
-        $butt_save = new XoopsFormButton('', '', _SUBMIT, 'submit');
-        $butt_save->setExtra('onclick="this.form.elements.op.value=\'saveeditmpegs\'"');
-        $save_tray->addElement($butt_save);
-        $mytreefileext = new debaserTree($xoopsDB->prefix('debaser_mimetypes'), 'mime_ext', 'mime_ext');
-        ob_start();
-        $mytreefileext->debaserSelBox('mime_ext', 'mime_ext', $fileext, 0, 'fileext');
-        $formfileext = new XoopsFormLabel(_MD_DEBASER_GENRE, ob_get_contents());
-        ob_end_clean();
-        $formlink = new XoopsFormText(_MD_DEBASER_EXTLINK, 'link', 50, 150, $link);
-        $formartist = new XoopsFormText(_AM_DEBASER_ARTIST, 'artist', 50, 50, $artist);
-        $formtitle = new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 50, $title);
-        $formalbum = new XoopsFormText(_AM_DEBASER_ALBUM, 'album', 50, 50, $album);
-        $formyear = new XoopsFormText(_AM_DEBASER_YEAR, 'year', 4, 4, $year);
-        $formcomment = new XoopsFormDhtmlTextArea(_AM_DEBASER_COMMENT, 'addinfo', $addinfo, 10, 50);
-        $formtrack = new XoopsFormText(_AM_DEBASER_TRACK, 'track', 3, 3, $track);
-
-        $mytreechose = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-        ob_start();
-        $mytreechose->debaserSelBox('genretitle', 'genretitle', $genreid, 0, 'genrefrom');
-        $formgenre = new XoopsFormLabel(_MD_DEBASER_GENRE, ob_get_contents());
-        ob_end_clean();
-        $formlength = new XoopsFormText(_AM_DEBASER_LENGTH, 'length', 5, 5, $length);
-        $formbitrate = new XoopsFormText(_MD_DEBASER_BITRATE, 'bitrate', 3, 3, $bitrate);
-        $formfrequence = new XoopsFormText(_MD_DEBASER_FREQUENCY, 'frequence', 5, 5, $frequence);
-        $formweight = new XoopsFormText(_AM_DEBASER_WEIGHT, 'weight', 4, 4, $weight);
-        $formapproved = new XoopsFormRadioYN(_AM_DEBASER_APPROVE2, 'approved', 1, _YES, _NO);
-        $edform->addElement($create_tray);
-        $edform->addElement($formfileext);
-        $edform->addElement($formlink);
-        $edform->addElement($formartist);
-        $edform->addElement($formtitle);
-        $edform->addElement($formalbum);
-        $edform->addElement($formyear);
-        $edform->addElement($formcomment);
-        $edform->addElement($formgenre);
-        $edform->addElement($formtrack);
-        $edform->addElement($formlength);
-        $edform->addElement($formbitrate);
-        $edform->addElement($formfrequence);
-        $edform->addElement($formweight);
-        $edform->addElement($formapproved);
-        $edform->addElement($save_tray);
-        $xoopsTpl->assign('editmpeg', $edform->render());
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(0, _AM_DEBASER_EDITMPEG.' : '.$artist.' : '.$title));
-        $xoopsTpl->display('db:debaser_ameditmpegs.html');
-    }
-/* -- */
-
-/* function for approving mpegs */
-    function approve()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
-
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
-
-        global $xoopsDB, $genrelist, $xoopsModule, $xoopsModuleConfig;
-
-        $filelist = array();
-        $sql = '
-	SELECT
-	d.xfid, d.filename, d.artist, d.title, d.album, d.year, d.addinfo, d.track, d.genre, d.length, d.link, d.bitrate, d.frequence, d.approved, d.fileext, d.weight, t.genreid, t.genretitle
-	FROM ' . $xoopsDB->prefix('debaser_files') . ' d, ' . $xoopsDB->prefix('debaser_genre') . ' t
-	WHERE t.genretitle=d.genre AND d.approved = 0
-	ORDER BY d.artist ASC ';
-
-        $result = $xoopsDB->query($sql);
-
-        $hasitems = $xoopsDB -> getRowsNum($result);
-
-        if ($hasitems > 0) {
-            while (list($xfid, $filename, $artist, $title, $album, $year, $addinfo, $track, $genre, $length, $link, $bitrate, $frequence, $approved, $fileext, $weight, $genreid, $genretitle) = $xoopsDB->fetchRow($result)) {
-                $edform = new XoopsThemeForm(_AM_DEBASER_EDITMPEG, 'approveform', xoops_getenv('PHP_SELF'));
-            
-                $memberHandler =  xoops_getHandler('member');
-                $group_list = & $memberHandler -> getGroupList();
-                $gpermHandler =  xoops_getHandler('groupperm');
-                $groups = $gpermHandler -> getGroupIds('DebaserFilePerm', $xfid, $xoopsModule -> getVar('mid'));
-                $groups = $groups;
-
-                if ($xoopsModuleConfig['usefileperm'] == 1) {
-                    $edform -> addElement(new XoopsFormSelectGroup(_AM_DEBASER_FCATEGORY_GROUPPROMPT, 'groups', true, $groups, 5, true));
-                }
-            
-                $create_tray = new XoopsFormElementTray('', '');
-                $create_tray->addElement(new XoopsFormHidden('op', 'deletesong'));
-                $create_tray->addElement(new XoopsFormHidden('mpegid', $xfid));
-                $create_tray->addElement(new XoopsFormHidden('delfile', $filename));
-                $butt_play = new XoopsFormButton('', '', _AM_DEBASER_PLAY, 'button');
-                $butt_play->setExtra('onclick="javascript:openWithSelfMain(\''.XOOPS_URL.'/modules/debaser/player.php?id='.$xfid.'\',\'player\',10,10)"');
-                $create_tray->addElement($butt_play);
-                $butt_delete = new XoopsFormButton('', '', _DELETE, 'submit');
-                $butt_delete->setExtra('onclick="this.form.elements.op.value=\'deletesong\'"');
-                $create_tray->addElement($butt_delete);
-                $save_tray = new XoopsFormElementTray('', '');
-                $butt_save = new XoopsFormButton('', '', _SUBMIT, 'submit');
-                $butt_save->setExtra('onclick="this.form.elements.op.value=\'saveapprove\'"');
-                $save_tray->addElement($butt_save);
-
-                $mytreefileext = new debaserTree($xoopsDB->prefix('debaser_mimetypes'), 'mime_ext', 'mime_ext');
-                ob_start();
-                $mytreefileext->debaserSelBox('mime_ext', 'mime_ext', $fileext, 0, 'fileext');
-                $formfileext = new XoopsFormLabel(_MD_DEBASER_GENRE, ob_get_contents());
-                ob_end_clean();
-        
-                $formlink = new XoopsFormText(_MD_DEBASER_EXTLINK, 'link', 50, 150, $link);
-                $formartist = new XoopsFormText(_AM_DEBASER_ARTIST, 'artist', 50, 50, $artist);
-                $formtitle = new XoopsFormText(_AM_DEBASER_TITLE, 'title', 50, 50, $title);
-                $formalbum = new XoopsFormText(_AM_DEBASER_ALBUM, 'album', 50, 50, $album);
-                $formyear = new XoopsFormText(_AM_DEBASER_YEAR, 'year', 4, 4, $year);
-                $formcomment = new XoopsFormDhtmlTextArea(_AM_DEBASER_COMMENT, 'addinfo', $addinfo, 10, 50);
-                $formtrack = new XoopsFormText(_AM_DEBASER_TRACK, 'track', 3, 3, $track);
-
-                $mytreechose = new debaserTree($xoopsDB->prefix('debaser_genre'), 'genreid', 'subgenreid');
-                ob_start();
-                $mytreechose->debaserSelBox('genretitle', 'genretitle', $genreid, 0, 'genrefrom');
-                $formgenre = new XoopsFormLabel(_MD_DEBASER_GENRE, ob_get_contents());
-                ob_end_clean();
-                $formlength = new XoopsFormText(_AM_DEBASER_LENGTH, 'length', 5, 5, $length);
-                $formbitrate = new XoopsFormText(_MD_DEBASER_BITRATE, 'bitrate', 3, 3, $bitrate);
-                $formfrequence = new XoopsFormText(_MD_DEBASER_FREQUENCY, 'frequence', 5, 5, $frequence);
-                $formweight = new XoopsFormText(_AM_DEBASER_WEIGHT, 'weight', 4, 4, $weight);
-            //$formweight->setDescription(_AM_DEBASER_WEIGHT_DSC);
-            $formapproved = new XoopsFormRadioYN(_AM_DEBASER_APPROVE2, 'approved', $approved, _YES, _NO);
-                $edform->addElement($create_tray);
-
-                $edform->addElement($formfileext);
-                
-                $edform->addElement($formlink);
-                $edform->addElement($formartist);
-                $edform->addElement($formtitle);
-                $edform->addElement($formalbum);
-                $edform->addElement($formyear);
-                $edform->addElement($formcomment);
-                $edform->addElement($formgenre);
-                $edform->addElement($formtrack);
-                $edform->addElement($formlength);
-                $edform->addElement($formbitrate);
-                $edform->addElement($formfrequence);
-                $edform->addElement($formweight);
-                $edform->addElement($formapproved);
-                $edform->addElement($save_tray);
-                $xoopsTpl->append('filelist', $edform->render());
-            }
-
-            $xoopsTpl->assign('adminmenu', debaseradminMenu(6, _AM_DEBASER_APPROVE));
-            $xoopsTpl->display('db:debaser_amapprove.html');
-        } else {
-            redirect_header('index.php', 1, _AM_DEBASER_NOAPPROVE);
-        }
-    }
+		foreach ($langlist as $wotever) {
+			$trnodedesc = $wotever.'_description';
+			$multijs .= 'var '.$trnodedesc.' = document.getElementById("'.$trnodedesc.'").parentNode.parentNode;
+			'.$trnodedesc.'.style.display="none";';
+		}
+		$multijs .= '}';
+		$xoTheme->addScript(null, array('type' => 'text/javascript'), $multijs);
+	}
+		}
+		else {
+		redirect_header('index.php', 2, _AM_DEBASER_NOAPPROVE);
+		}
+	}
 /* -- */
 
 /* function for saving edited mpegs */
-    function saveeditmpegs()
-    {
-        global $xoopsDB, $xoopsModuleConfig;
-        $groups = isset($_POST['groups']) ? $_POST['groups'] : array();
-        $sqlb = 'SELECT genretitle FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE genreid = ' . (int)$_POST['genrefrom'] . '';
-        $resultb = $xoopsDB->query($sqlb);
-        list($fromgenre) = $xoopsDB->fetchRow($resultb);
+	function saveeditmpegs() {
 
-        $sql = '
-	UPDATE ' . $xoopsDB->prefix('debaser_files') . '
-	SET
-		title=' . $xoopsDB->quoteString($_POST['title']) . ',
-		artist=' . $xoopsDB->quoteString($_POST['artist']) . ',
-		album=' . $xoopsDB->quoteString($_POST['album']) . ',
-		year=' . (int)$_POST['year'] . ',
-		addinfo=' . $xoopsDB->quoteString($_POST['addinfo']) . ',
-		track=' . (int)$_POST['track'] . ',
-		genre=' . $xoopsDB->quoteString($fromgenre) . ',
-		length=' . $xoopsDB->quoteString($_POST['length']) . ',
-		link=' . $xoopsDB->quoteString($_POST['link']) . ',
-		approved=' . (int)$_POST['approved'] . ',
-		bitrate=' . (int)$_POST['bitrate'] . ',
-		frequence=' . (int)$_POST['frequence'] . ',
-		fileext = ' . $xoopsDB->quoteString($_POST['fileext']) . ',
-		weight = ' . (int)$_POST['weight'] . '
-	WHERE xfid=' . (int)$_POST['mpegid'] . ' ';
+	global $xoopsDB, $xoopsModuleConfig, $module_id, $xoopsConfig, $xoopsUser;
 
-        $result = $xoopsDB->query($sql);
+	$olduid = intval($_POST['olduid']);
+	$uid = intval($_POST['uid']);
 
-        if ($xoopsModuleConfig['usefileperm'] == 1) {
-            debaser_save_Perm($groups, $_POST['mpegid'], 'DebaserFilePerm');
-        }
-        redirect_header('index.php', 1, _AM_DEBASER_DBUPDATE);
-    }
+	// Has the userid changed? Does the user is allowed to have his own upload directory? Then we move the file
+	$oldgroups = $xoopsUser->getGroups($olduid);
+	$newgroups = $xoopsUser->getGroups($uid);
+	if ($olduid != $uid && @array_intersect($xoopsModuleConfig['owndir'], $newgroups) && @array_intersect($xoopsModuleConfig['owndir'], $oldgroups)) {
+
+			if (!is_dir(DEBASER_RUP.'/user_'.$uid.'_')) {
+				@mkdir(DEBASER_RUP.'/user_'.$uid.'_', 0777);
+				@copy(DEBASER_RUP.'/index.html', DEBASER_RUP.'/user_'.$uid.'_/index.html');
+				@chmod(DEBASER_RUP.'/user_'.$uid.'_/index.html', 0644);
+
+				if ($xoopsModuleConfig['nohotlink'] == 1) {
+					makehtaccess('/user_'.$uid.'_');
+				} elseif ($xoopsModuleConfig['nohotlink'] == 0 && file_exists(DEBASER_RUP.'/user_'.$uid.'_/.htaccess')) {
+					@unlink(DEBASER_RUP.'/user_'.$uid.'_/.htaccess');
+				}
+			}
+
+		@copy(DEBASER_RUP.'/user_'.$olduid.'_/'.$_POST['filename'], DEBASER_RUP.'/user_'.$uid.'_/'.$_POST['filename']);
+		@unlink(DEBASER_RUP.'/user_'.$olduid.'_/'.$_POST['filename']);
+	}
+	if ($olduid != $uid && !@array_intersect($xoopsModuleConfig['owndir'], $newgroups) && @array_intersect($xoopsModuleConfig['owndir'], $oldgroups)) {
+		@copy(DEBASER_RUP.'/user_'.$olduid.'_/'.$_POST['filename'], DEBASER_RUP.'/'.$_POST['filename']);
+		@unlink(DEBASER_RUP.'/user_'.$olduid.'_/'.$_POST['filename']);
+	}
+	if ($olduid != $uid && @array_intersect($xoopsModuleConfig['owndir'], $newgroups) && !@array_intersect($xoopsModuleConfig['owndir'], $oldgroups)) {
+
+			if (!is_dir(DEBASER_RUP.'/user_'.$uid.'_')) {
+				@mkdir(DEBASER_RUP.'/user_'.$uid.'_', 0777);
+				@copy(DEBASER_RUP.'/index.html', DEBASER_RUP.'/user_'.$uid.'_/index.html');
+				@chmod(DEBASER_RUP.'/user_'.$uid.'_/index.html', 0644);
+
+				if ($xoopsModuleConfig['nohotlink'] == 1) {
+					makehtaccess('/user_'.$uid.'_');
+				} elseif ($xoopsModuleConfig['nohotlink'] == 0 && file_exists(DEBASER_RUP.'/user_'.$uid.'_/.htaccess')) {
+					@unlink(DEBASER_RUP.'/user_'.$uid.'_/.htaccess');
+				}
+			}
+
+		@copy(DEBASER_RUP.'/'.$_POST['filename'], DEBASER_RUP.'/user_'.$olduid.'_/'.$_POST['filename']);
+		@unlink(DEBASER_RUP.'/'.$_POST['filename']);
+	}
+
+		$result2 = $xoopsDB->query("SELECT mime_ext FROM ".$xoopsDB->prefix('debaser_mimetypes')." WHERE mime_id = ".intval($_POST['fileext'])."");
+		list($fileext) = $xoopsDB->fetchRow($result2);
+
+	$xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_files')." SET title=".$xoopsDB->quoteString($_POST['title']).", artist=".$xoopsDB->quoteString($_POST['artist']).", album=".$xoopsDB->quoteString($_POST['album']).", year=".intval($_POST['year']).", track=".intval($_POST['track']).", genreid=".intval($_POST['genrefrom']).", length=".$xoopsDB->quoteString($_POST['length']).", approved=".intval($_POST['approved']).", bitrate=".intval($_POST['bitrate']).", frequence=".intval($_POST['frequence']).", fileext = ".$xoopsDB->quoteString($fileext).", uid = ".intval($uid).", language = ".$xoopsDB->quoteString($xoopsConfig['language']).", linkcode = ".$xoopsDB->quoteString($_POST['linkcode'])." WHERE xfid=".intval($_POST['mpegid'])." ");
+
+	if ($xoopsModuleConfig['multilang'] == 0) {
+		$sql = $xoopsDB->query("SELECT textfileid FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid = ".intval($_POST['mpegid'])."");
+		$hasitems = $xoopsDB->getRowsNum($sql);
+		if ($hasitems == 1)
+		$xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textfiletext = ".$xoopsDB->quoteString($_POST['description'])." WHERE textfileid = ".intval($_POST['mpegid'])." AND language = ".$xoopsDB->quoteString($xoopsConfig['language'])."");
+		else
+		$xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textfileid, textfiletext, language) VALUES (".intval($_POST['mpegid']).", ".$xoopsDB->quoteString($_POST['description']).", ".$xoopsDB->quoteString($xoopsConfig['language']).")");
+	} else {
+			$langlist = XoopsLists::getLangList();
+			$aa = implode(',', $langlist);
+			$bb = explode(',', $aa);
+			$i = 0;
+			foreach ($langlist as $langcontent) {
+				$postdescription = $bb[$i].'_description';
+				$language = $bb[$i];
+
+				if ($_POST[$postdescription] != '') {
+					$getlang = $xoopsDB->query("SELECT textfileid FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid = ".intval($_POST['mpegid'])." AND language = ".$xoopsDB->quote("$bb[$i]")."");
+					$getlangs = $xoopsDB->getRowsNum($getlang);
+
+					if ($getlangs == 1) {
+					$result2 = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textfiletext = ".$xoopsDB->quoteString($_POST[$postdescription]).", language = ".$xoopsDB->quoteString("$language")." WHERE textfileid = ".intval($_POST['mpegid'])." AND language = ".$xoopsDB->quoteString("$language")."");
+					} else {
+					$result3 = $xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textfileid, textfiletext, language) VALUES (".intval($_POST['mpegid']).", ".$xoopsDB->quoteString($_POST[$postdescription]).", ".$xoopsDB->quoteString("$language").")");
+					}
+				}
+				$i++;
+
+				unset($postdescription);
+				unset($language);
+			}
+	}
+
+	redirect_header('index.php', 2, _AM_DEBASER_DBUPDATE);
+
+	}
 /* -- */
 
-    /* function for saving edited mpegs */
-    function saveapprove()
-    {
-        global $xoopsDB, $xoopsModuleConfig;
-        $groups = isset($_POST['groups']) ? $_POST['groups'] : array();
-    
-        if (isset($_POST['approved']) && $_POST['approved'] == 1) {
-            $approved = 1;
-        // Notification
-        global $xoopsModule;
-            $notificationHandler = xoops_getHandler('notification');
-            $tags = array();
-            $tags['SONG_NAME'] = $_POST['artist'] . ' - ' . $_POST['title'];
-            $tags['SONG_URL'] = XOOPS_URL. '/modules/'.$xoopsModule->getVar('dirname').'/singlefile.php?id='.$_POST['mpegid'];
-            $notificationHandler->triggerEvent('global', 0, 'new_song', $tags);
-        } else {
-            $approved = 0;
-        }
+	// function for saving edited or formerly unapproved files
+	function saveapprove() {
 
-        $sqlb = 'SELECT genretitle FROM ' . $xoopsDB->prefix('debaser_genre') . ' WHERE genreid = ' . (int)$_POST['genrefrom'] . '';
-        $resultb = $xoopsDB->query($sqlb);
-        list($fromgenre) = $xoopsDB->fetchRow($resultb);
+	global $xoopsDB, $xoopsModuleConfig, $xoopsConfig;
 
-        $sql = '
-	UPDATE ' . $xoopsDB->prefix('debaser_files') . '
-	SET
-		title=' . $xoopsDB->quoteString($_POST['title']) . ',
-		artist=' . $xoopsDB->quoteString($_POST['artist']) . ',
-		album=' . $xoopsDB->quoteString($_POST['album']) . ',
-		year=' . (int)$_POST['year'] . ',
-		addinfo=' . $xoopsDB->quoteString($_POST['addinfo']) . ',
-		track=' . (int)$_POST['track'] . ',
-		genre=' . $xoopsDB->quoteString($fromgenre) . ',
-		length=' . $xoopsDB->quoteString($_POST['length']) . ',
-		bitrate=' . (int)$_POST['bitrate'] . ',
-		frequence=' . (int)$_POST['frequence'] . ',
-		link=' . $xoopsDB->quoteString($_POST['link']) . ',
-		approved=' . (int)$approved . ',
-		fileext=' . $xoopsDB->quoteString($_POST['fileext']) . ',
-		weight = ' . (int)$_POST['weight'] . '
-	WHERE xfid=' . (int)$_POST['mpegid'] . ' ';
+	if (isset($_POST['approved']) && $_POST['approved'] == 1) {
+		$approved = 1;
+		// Notification
+		global $xoopsModule;
+		$notification_handler =& xoops_gethandler('notification');
+		$tags = array();
+		$tags['SONG_NAME'] = $_POST['artist']." - ".$_POST['title'];
+		$tags['SONG_URL'] = DEBASER_URL. '/singlefile.php?id='.$_POST['mpegid'];
+		$notification_handler->triggerEvent('global', 0, 'new_song', $tags);
+	} else {
+		$approved = 0;
+	}
 
-        $result = $xoopsDB->query($sql);
+	if ($_POST['uid'] != $_POST['olduid']) {
+		$member_handler = &xoops_gethandler('member');
+		$newowner = &$member_handler->getUser($_POST['uid']);
+		$oldowner = &$member_handler->getUser($_POST['olduid']);
+		$member_handler->updateUserByField($newowner, 'posts', $newowner->getVar('posts') + 1);
+		$member_handler->updateUserByField($oldowner, 'posts', $oldowner->getVar('posts') - 1);
+		$olddir = getthedir($_POST['olduid']);
+		$newdir = getthedir($_POST['uid']);
+		if ($olddir == '' && $newdir == '') {
+			// nothing to move
+		} else {
+			if (!is_dir(DEBASER_RUP.'/'.$newdir)) @mkdir(DEBASER_RUP.'/'.$newdir, 0777);
 
-        if ($xoopsModuleConfig['usefileperm'] == 1) {
-            debaser_save_Perm($groups, $_POST['mpegid'], 'DebaserFilePerm');
-        }
-        redirect_header('index.php?op=approve', 1, _AM_DEBASER_DBUPDATE);
-    }
-    /* -- */
+			if (isset($_POST['haslofi']) && $_POST['haslofi'] == 'haslofi') @rename(DEBASER_RUP.'/'.$olddir.'lofi_'.$_POST['delfile'], DEBASER_RUP.'/'.$newdir.'lofi_'.$_POST['delfile']);
 
-/* function for displaying available players */
-    function playermanager()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
+			@rename(DEBASER_RUP.'/'.$olddir.$_POST['delfile'], DEBASER_RUP.'/'.$newdir.$_POST['delfile']);
+		}
+	}
 
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
+	$xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_files')." SET title = ".$xoopsDB->quoteString($_POST['title']).", artist = ".$xoopsDB->quoteString($_POST['artist']).", album = ".$xoopsDB->quoteString($_POST['album']).", year = ".intval($_POST['year']).", track = ".intval($_POST['track']).", genreid = ".intval($_POST['genreid']).", length = ".$xoopsDB->quoteString($_POST['length']).", bitrate = ".intval($_POST['bitrate']).", frequence = ".intval($_POST['frequence']).", approved = ".intval($approved).", fileext = ".$xoopsDB->quoteString($_POST['fileext']).", uid = ".intval($_POST['uid'])." WHERE xfid = ".intval($_POST['mpegid'])."");
 
-        global $xoopsDB, $genrelist;
-        $sql = 'SELECT name FROM '.$xoopsDB->prefix('debaser_player').' ORDER BY name';
-        $result = $xoopsDB->query($sql);
+	if ($xoopsModuleConfig['multilang'] == 0) {
+		$sql = $xoopsDB->query("SELECT textfileid FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid = ".intval($_POST['mpegid'])."");
+		$hasitems = $xoopsDB->getRowsNum($sql);
+		if ($hasitems == 1)
+		$xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textfiletext = ".$xoopsDB->quoteString($_POST['description'])." WHERE textfileid = ".intval($_POST['mpegid'])." AND language = ".$xoopsDB->quoteString($xoopsConfig['language'])."");
+		else
+		$xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textfileid, textfiletext, language) VALUES (".intval($_POST['mpegid']).", ".$xoopsDB->quoteString($_POST['description']).", ".$xoopsDB->quoteString($xoopsConfig['language']).")");
+	} else {
+			$langlist = XoopsLists::getLangList();
+			$aa = implode(',', $langlist);
+			$bb = explode(',', $aa);
+			$i = 0;
+			foreach ($langlist as $langcontent) {
+				$postdescription = $bb[$i].'_description';
+				$result1 = $xoopsDB->query("UPDATE ".$xoopsDB->prefix('debaser_text')." SET textfiletext = ".$xoopsDB->quoteString($_POST[$postdescription]).", language = ".$xoopsDB->quoteString("$bb[$i]")." WHERE textfileid = ".intval($_POST['mpegid'])." AND language = ".$xoopsDB->quoteString("$bb[$i]")."");
 
-        while (list($player) = $xoopsDB->fetchRow($result)) {
-            $xoopsTpl->append('player', $player);
-        }
+				if (!$result1)
+					$xoopsDB->query("INSERT INTO ".$xoopsDB->prefix('debaser_text')." (textfileid, textfiletext, language) VALUES (".intval($_POST['mpegid']).", ".$xoopsDB->quoteString($_POST[$postdescription]).", language = ".$xoopsDB->quoteString("$bb[$i]").")");
 
-        $nuform = new XoopsThemeForm(_AM_DEBASER_NEWPLAYER, 'newplayerform', 'index.php');
-        $formplayername = new XoopsFormText(_AM_DEBASER_NAME, 'newplayername', 50, 50);
-        $formplayercode = new XoopsFormTextArea(_AM_DEBASER_CODE, 'newplayer', '', 15, 30);
-        $formplayerheight = new XoopsFormText(_AM_DEBASER_HEIGHT, 'playerheight', 4, 4);
-        $formplayerwidth = new XoopsFormText(_AM_DEBASER_WIDTH, 'playerwidth', 4, 4);
-        $formplayerautostart = new XoopsFormRadioYN(_AM_DEBASER_AUTOSTART, 'autostart', 1, _YES, _NO);
-        $op_hidden = new XoopsFormHidden('op', 'newplayer');
-        $submit_button = new XoopsFormButton('', 'dbsubmit', _SUBMIT, 'submit');
-        $nuform->addElement($formplayername);
-        $nuform->addElement($formplayercode);
-        $nuform->addElement($formplayerheight);
-        $nuform->addElement($formplayerwidth);
-        $nuform->addElement($formplayerautostart);
-        $nuform->addElement($op_hidden);
-        $nuform->addElement($submit_button);
-        $xoopsTpl->assign('newplayer', $nuform->render());
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(3, _AM_DEBASER_EDITPLAYERS));
-        $xoopsTpl->display('db:debaser_amplaymanage.html');
-    }
-/* -- */
+				$i++;
+			}
+	}
 
-    /* function for deleting player when confirmed */
-    function deleteplayer($del=0)
-    {
-        global $xoopsDB;
+	redirect_header('index.php?op=approve', 2, _AM_DEBASER_DBUPDATE);
+	}
+	/* -- */
 
-        if (isset($_POST['del']) && $_POST['del'] == 1) {
-            $sql = 'DELETE FROM ' . $xoopsDB->prefix('debaser_player') . ' WHERE name=' . $xoopsDB->quoteString($_POST['playertype']) . ' ';
 
-            if ($xoopsDB->query($sql)) {
-                redirect_header('index.php', 1, $_POST['playertype']._AM_DEBASER_DELETED);
-            } else {
-                redirect_header('index.php', 1, $_POST['playertype']._AM_DEBASER_NOTDELETED);
-            }
-            exit();
-        } else {
-            echo '<h4>' . _AM_DEBASER_PLAYERADMIN . '</h4>';
-            xoops_confirm(array('playertype' => $_GET['playertype'], 'del' => 1), 'index.php?op=deleteplayer', _AM_DEBASER_SUREDELETEPLAYER);
-        }
-    }
-    /* -- */
+	/* function for deleting mp3 when confirmed */
+	function deletesong($del=0) {
 
-    /* function for deleting mp3 when confirmed */
-    function deletesong($del=0)
-    {
-        global $xoopsDB, $xoopsModule;
+	global $xoopsDB, $xoopsModule, $member_handler;
 
-        if (isset($_POST['del']) && $_POST['del'] == 1) {
-            $sql = '
-		DELETE FROM ' . $xoopsDB->prefix('debaser_files') . '
-		WHERE xfid=' . (int)$_POST['mpegid'] . '';
+		if (isset($_POST['del']) && $_POST['del'] == 1) {
+		$userpath = getthedir($_POST['uid']);
+		$sql = "DELETE FROM ".$xoopsDB->prefix('debaser_files')." WHERE xfid=".intval($_POST['mpegid'])."";
+		$sql2 = "UPDATE ".$xoopsDB->prefix('debaser_genre')." SET total = total-1 WHERE genreid = ".intval($_POST['genreid'])."";
+		$xoopsDB->query("DELETE FROM ".$xoopsDB->prefix('debaser_text')." WHERE textfileid=".intval($_POST['mpegid'])."");
 
-            if ($xoopsDB->query($sql)) {
-                @unlink(XOOPS_ROOT_PATH.'/modules/debaser/upload/'.$_POST['delfile']);
-                xoops_comment_delete($xoopsModule->getVar('mid'), $_POST['mpegid']);
-                xoops_notification_deletebyitem($xoopsModule->getVar('mid'), 'song', $_POST['mpegid']);
-                redirect_header('index.php', 2, $_POST['delfile']._AM_DEBASER_DELETED);
-            } else {
-                redirect_header('index.php', 2, $_POST['delfile']._AM_DEBASER_NOTDELETED);
-            }
-            exit();
-        } else {
-            echo '<h4>' . _AM_DEBASER_FILEADMIN . '</h4>';
-            if (isset($_POST['delfile']) && $_POST['mpegid']) {
-                $delfile = $_POST['delfile'];
-                $mpegid = $_POST['mpegid'];
-            } else {
-                $delfile = $_GET['delfile'];
-                $mpegid = $_GET['mpegid'];
-            }
-            xoops_confirm(array('delfile' => $delfile, 'mpegid' => $mpegid, 'del' => 1), 'index.php?op=deletesong', _AM_DEBASER_SUREDELETEFILE);
-        }
-    }
-    /* -- */
+			if ($xoopsDB->query($sql) && $xoopsDB->query($sql2)) {
+			@unlink(DEBASER_RUP.'/'.$userpath.'/'.$_POST['delfile']);
+			if ($_POST['lofi'] == 1) @unlink(DEBASER_RUP.'/'.$userpath.'/lofi_'.$_POST['delfile']);
+			xoops_comment_delete($xoopsModule->getVar('mid'), $_POST['mpegid']);
+			xoops_notification_deletebyitem($xoopsModule->getVar('mid'), 'song', $_POST['mpegid']);
+			$member_handler = &xoops_gethandler('member');
+			$poster = &$member_handler->getUser($_POST['uid']);
+			$member_handler->updateUserByField($poster, 'posts', $poster->getVar('posts') - 1);
+			redirect_header('index.php', 2, $_POST['delfile']._AM_DEBASER_DELETED);
+			}
+			else {
+			redirect_header('index.php', 2, $_POST['delfile']._AM_DEBASER_NOTDELETED);
+			}
+		exit();
+		}
+		else {
+		xoops_cp_header();
+		echo "<h4>"._AM_DEBASER_FILEADMIN."</h4>";
+		$delfile = isset($_GET['delfile']) ? $_GET['delfile'] : $_POST['delfile'];
+		$mpegid = isset($_GET['mpegid']) ? $_GET['mpegid'] : $_POST['mpegid'];
+		$uid = isset($_GET['uid']) ? $_GET['uid'] : $_POST['uid'];
+		$lofi = isset($_GET['lofi']) ? $_GET['lofi'] : $_POST['lofi'];
+		$genreid = isset($_GET['genreid']) ? $_GET['genreid'] : $_POST['genreid'];
+		xoops_confirm(array('delfile' => $delfile, 'genreid' => $genreid, 'lofi' => $lofi, 'mpegid' => $mpegid, 'uid' => $uid, 'del' => 1), 'index.php?op=deletesong', _AM_DEBASER_SUREDELETEFILE);
+		xoops_cp_footer();
+		}
+	}
+	/* -- */
 
-    /* function for saving player changes */
-    function changeplayer()
-    {
-        global $xoopsDB, $myts;
 
-        $xoopsDB->query('
-	UPDATE ' . $xoopsDB->prefix('debaser_player') . "
-	SET
-		html_code = '" . $myts->stripSlashesGPC($_POST['playernew']) . "',
-		name = " . $xoopsDB->quoteString($_POST['namenew']) . ',
-		height = ' . (int)$_POST['playerheight'] . ',
-		width = ' . (int)$_POST['playerwidth'] . ',
-		autostart = ' . (int)$_POST['autostart'] . '
-	WHERE name=' . $xoopsDB->quoteString($_POST['name']) . ' ');
+	if(!isset($_POST['op'])) $op = isset($_GET['op']) ? $_GET['op'] : 'default';
+	else $op = $_POST['op'];
 
-        redirect_header('index.php', 2, _AM_DEBASER_DBUPDATE);
-    }
-    /* -- */
+	switch ($op) {
 
-    /* function editing players */
-    function editplayer()
-    {
-        require_once XOOPS_ROOT_PATH.'/class/template.php';
+		case 'showmpegs':
+		xoops_cp_header();
+		showmpegs();
+		xoops_cp_footer();
+		break;
 
-        if (!isset($xoopsTpl)) {
-            $xoopsTpl = new XoopsTpl();
-        }
+		case 'deletesong':
+		deletesong();
+		break;
 
-        global $xoopsDB, $playertype, $myts;
+		case 'editmpegs':
+		xoops_cp_header();
+		editmpegs();
+		xoops_cp_footer();
+		break;
 
-        $result = $xoopsDB->query('
-	SELECT name, html_code, height, width, autostart FROM ' . $xoopsDB->prefix('debaser_player') . '
-	WHERE name=' . $xoopsDB->quoteString($playertype) . ' ');
+		case 'saveeditmpegs':
+		saveeditmpegs();
+		break;
 
-        list($name, $html_code, $height, $width, $autostart) = $xoopsDB->fetchRow($result);
+		case 'saveapprove':
+		saveapprove();
+		break;
 
-        $edform = new XoopsThemeForm(_AM_DEBASER_EDITPLAYER, 'editplayerform', 'index.php');
-        $formplayername = new XoopsFormText(_AM_DEBASER_NAME, 'namenew', 50, 50, $name);
-        $formplayercode = new XoopsFormTextArea(_AM_DEBASER_CODE, 'playernew', $myts->htmlSpecialChars($html_code), 20, 50);
-        $formplayerheight = new XoopsFormText(_AM_DEBASER_HEIGHT, 'playerheight', 4, 4, $height);
-        $formplayerwidth = new XoopsFormText(_AM_DEBASER_WIDTH, 'playerwidth', 4, 4, $width);
-        $formplayerautostart = new XoopsFormRadioYN(_AM_DEBASER_AUTOSTART, 'autostart', $autostart, _YES, _NO);
-        $op_hidden = new XoopsFormHidden('op', 'changeplayer');
-        $name_hidden = new XoopsFormHidden('name', $name);
-        $submit_button = new XoopsFormButton('', 'dbsubmit', _SUBMIT, 'submit');
-        $edform->addElement($formplayername);
-        $edform->addElement($formplayercode);
-        $edform->addElement($formplayerheight);
-        $edform->addElement($formplayerwidth);
-        $edform->addElement($formplayerautostart);
-        $edform->addElement($op_hidden);
-        $edform->addElement($name_hidden);
-        $edform->addElement($submit_button);
-        $xoopsTpl->assign('adminmenu', debaseradminMenu(3, _AM_DEBASER_EDITPLAYER.' : '.$name));
-        $xoopsTpl->assign('editplayer', $edform->render());
-        $xoopsTpl->display('db:debaser_ameditplay.html');
-    }
-    /* -- */
+		case 'movesongs':
+		movesongs();
+		break;
 
-    /* function for saving new players */
-    function newplayer()
-    {
-        global $xoopsDB, $myts;
+		case 'approve':
+		xoops_cp_header();
+		approve();
+		xoops_cp_footer();
+		break;
 
-        $xoopsDB->query('
-	INSERT INTO '
-                    . $xoopsDB->prefix('debaser_player') . ' (name, html_code, width, height, autostart)
-	VALUES ('
-                    . $xoopsDB->quoteString($_POST['newplayername']) . ", '" . $myts->stripSlashesGPC($_POST['newplayer']) . "', " . (int)$_POST['playerheight'] . ', ' . (int)$_POST['playerwidth']
-                    . ', '
-                    . (int)$_POST['autostart']
-                    . ' ) ');
+		case 'default':
+		default:
+		xoops_cp_header();
+		debaseradmin();
+		xoops_cp_footer();
+		break;
+	}
 
-        redirect_header('index.php', 1, _AM_DEBASER_NEWPLAYADD);
-    }
-    /* -- */
-
-    xoops_cp_header();
-
-    if (!isset($op)) {
-        $op = '';
-    }
-
-    switch ($op) {
-
-        case 'batchadd':
-        batchadd();
-        break;
-
-        case 'showmpegs':
-        showmpegs();
-        break;
-
-        case 'playermanager':
-        playermanager();
-        break;
-
-        case 'deleteplayer':
-        deleteplayer();
-        break;
-
-        case 'newplayer':
-        newplayer();
-        break;
-
-        case 'deletesong':
-        deletesong();
-        break;
-
-        case 'editmpegs':
-        editmpegs();
-        break;
-
-        case 'saveeditmpegs':
-        saveeditmpegs();
-        break;
-
-        case 'saveapprove':
-        saveapprove();
-        break;
-
-        case 'editplayer':
-        editplayer();
-        break;
-
-        case 'singleupload':
-        singleupload();
-        break;
-
-        case 'changeplayer':
-        changeplayer();
-        break;
-
-        case 'movesongs':
-        movesongs();
-        break;
-
-        case 'approve':
-        approve();
-        break;
-
-        case 'default':
-        default:
-        debaseradmin();
-        break;
-    }
-
-    xoops_cp_footer();
+?>

@@ -1,0 +1,10 @@
+<div><span style="color:#ff0000">
+<{$smarty.const._MD_DEBASER_MAXUPSIZE}><{$uploadmax}> <{$smarty.const._MD_DEBASER_MAXBYTES}>
+</span></div>
+<{if $toobig == false}>
+<div><span style="color:#ff0000">
+<{$remaining}>
+</span></div>
+
+<{$extfileform}>
+<{else}><{$smarty.const._MD_DEBASER_TOOBIG}><{/if}>

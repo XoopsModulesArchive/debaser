@@ -1,0 +1,123 @@
+.playerdisplay { display: block }
+* html .playerdisplay { display: none }
+*:first-child+html .playerdisplay { display: none }
+div#playlistresponse { text-align: right; float: right; padding-right:10px }
+a.tooltip span { display:none; padding:2px 3px; margin-left:8px; width:180px }
+a.tooltip:hover span { display:inline; position:absolute; background:#fff; border:1px solid #ccc; color:#6c6c6c; font-weight: normal; font-size: 80%; margin-top: -20px }
+.debasertable { background-color: #231f20; border: none; width: 100% }
+.firstcell { width: 75px; height: auto }
+.firstcell img { width: 75px; height: 75px }
+.secondcell { background-image: url('../images/hortop.jpg'); height: 8px }
+.secondcellgenre { background-image: url('../images/hortop.jpg'); background-repeat: repeat-x; height: 30px; vertical-align: bottom; padding-left: 10px; padding-top: 10px; color: silver }
+.indexdiv { margin: 10px; padding:5px; border: 1px solid silver; color: #fff; width: 300px; float: left }
+.debasertable a { font-weight: bold; text-decoration: none; color: silver }
+.debasertable a:hover { font-weight: bold; text-decoration: underline; color: #fff }
+.indexdivsingle { margin: 10px; padding:5px; border: 1px solid silver; color: #fff }
+.catshot { padding-right:10px; padding-bottom:5px }
+.cattitle { vertical-align: top; width: 180px; }
+.catdesc { padding-left:10px; vertical-align: top; width: 120px }
+.catdesc p { margin-top:0px }
+textarea { color: #000 }
+.bottomcell, .bottomcell2 { height: 36px; border-top: 2px solid silver; vertical-align: middle; text-align: right; padding-right: 10px }
+.debtextcell { height: auto; vertical-align: top }
+#debnotification table { border-collapse: collapse; background-color: #231f20; border: 2px solid #231f20 }
+#debnotification td { border: 2px solid silver }
+#debnotification table th, #debnotification td.head, #debnotification td.even, #debnotification td.odd, #debnotification td.foot, #mydebasersettings td.head, #mydebasersettings td.even, #extlink td.head, #extlink td.even, #editmpegform td.head, #editmpegform td.even, #extfile td.head, #extfile td.even, #brokenform td.head, #brokenform td.even { background-color: #231f20 !important; color: #fff; padding: 5px }
+.debimagebar, .debimagebar2 { width: 22px; height: 22px }
+#extlink th, #extfile th, #mydebasersettings th, #brokenform th, #editmpegform th {
+background-color: #231f20;
+color: #fff;
+vertical-align: top;
+background-image: url('../images/hortop.jpg');
+background-repeat: repeat-x;
+margin: 0px;
+padding: 0px;
+font-size: 24px
+}
+#extlink td.head, #mydebasersettings td.head, #extfile td.head, #brokenform td.head, #editmpegform td.head {
+width: 200px !important
+}
+.iconsright img {
+width: 22px;
+height: 22px;
+vertical-align: middle
+}
+#rateslider {margin-left:85px; position:relative; float:left; border:1px solid silver; font-size:12px; width:150px; height:15px; margin-top:4px}
+#rateslider a {height:15px; position:absolute; left:0px; top:0px}
+#rateslider a:hover {border-right:0px solid #fff; background-color:transparent; background-image:url('../images/stars.gif');}
+#rateslider a span{display:none}
+#rateslider a:hover span {display:inline; position:absolute; left:-25px; top:0px; color:silver; font-weight:bold}
+#samesamediv {float:left; padding:3px; border:1px solid silver; font-size:90%}
+#samesamediv p {margin-top:0px; font-weight:bold}
+#starsbar {width:100px; height:15px; text-align:left; float:left; padding-right:10px; background-image:url('../images/starsbar.gif'); background-repeat:no-repeat}
+#commentsnav {text-align:center; padding: 3px 3px 10px 3px; margin:3px; background-color:#231f20; color:#fff}
+#commentsnav table.outer {border:none}
+#commentsnav td.even {background-color:#231f20}
+div#filecomments, div#filecomments th, div#filecomments td.head {background-color:#231f20; color:#fff}
+div#filecomments table.outer {border:none}
+div#filecomments td.odd, div#filecomments td.even {background-color:#c0c0c0}
+div#visembed {display:none; position:absolute; top:100px; left:50%; width:300px; margin-left:-150px; border:2px solid #231f20; padding:5px; background-color:#fff}
+div#visembed select {width:100%}
+div#visembed textarea {width:290px; height:120px}
+#loading {
+background: #fff url('../images/indicator.gif') left no-repeat;
+color: #369;
+display: none;
+font-weight: bold;
+margin: 1em 0;
+padding-left: 20px
+}
+/* autocomplete css */
+.ac_results {
+padding: 0px;
+border: 1px solid black;
+background-color: white;
+overflow: hidden;
+z-index: 99999
+}
+.ac_results ul {
+width: 100%;
+list-style-position: outside;
+list-style: none;
+padding: 0;
+margin: 0
+}
+.ac_results li {
+margin: 0px;
+padding: 2px 5px;
+cursor: default;
+display: block;
+font: menu;
+font-size: 12px;
+line-height: 16px;
+overflow: hidden
+}
+.ac_loading {
+background: white url('../images/indicator.gif') right center no-repeat
+}
+.ac_odd {
+background-color: #eee
+}
+.ac_over { background-color: #231f20; color: white }
+div#debsearchdiv { padding: 2px; background-color: #231f20; color: #fff; font-size: 12px; height:24px }
+input#ajaxsearch { height: 19px; font-size: 12px; width: 251px; padding-top: 4px; padding-left: 5px; padding-right: 5px; padding-bottom: 0px; margin: 0px; float: left; border: none }
+.debsearchword { float:left; padding-right:5px; padding-top:5px; padding-left:5px; font-weight:bold }
+div#debsearchresults { padding: 10px; background-color: #231f20; font-size: 12px }
+div#debsearchresults a { color: silver }
+div#debsearchresults a:hover { text-decoration: underline }
+div#debsearchresults h1 { font-size: 18px; font-weight: bold; color: #fff; margin-top: 0px }
+span#debdownhits { font-weight: bold }
+.diffi { border: 1px solid black; width:380px; padding:5px; float:left }
+ul#debaserreorder { width:420px; list-style-type: none; margin:0px; padding:5px }
+.captchaImage { margin: 0 2px; }
+.simpleCaptchaSelected { border: 2px solid #393; }
+.tooltip-target { }
+.tooltip-content { display: none; position: absolute; width: 250px; padding: 10px; border: 3px solid silver; background-color: white; text-align: center; color: black }
+.tooltip-content p { margin: 0 }
+.tooltip-target2 { }
+.tooltip-content2 { display: none; position: absolute; width: 300px; padding: 10px; border: 3px solid silver; background-color: white; text-align: center; color: black }
+.similartable { font-size: 80% !important; text-align: left }
+.simperc { font-weight: bold; padding: 2px }
+.simentry { padding: 2px }
+.simentry a { color: #231f20 !important; text-decoration: underline }
+.simentry a:hover { color: #231f20; text-decoration: none }

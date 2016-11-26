@@ -1,0 +1,151 @@
+/*
+	pure layout properties are not indent. you can edit them for your needs.
+	pure technical properties are indent 3 tabs. Generally there is no need to edit them. // important for functionality
+	some properties are indent 1 tab, they are important for functionality but have to be adapted to your layout
+
+	Reine Designangaben f�r das Menue sind nicht einger�ckt!
+	Rein technische Angaben sind  dreimal einger�ckt. Diese m�ssen in der Regel nicht ge�ndert werden.
+	Eine "Zwischenstellung" nimmt beispielsweise die Menuebreite Breite ein. Sie ist sowohl f�r Design als auch Funktionst�chtigkeit wichtig. Derartige Angaben sind zweimal einger�ckt.
+*/
+
+/*
+	original code @ http://www.alistapart.com/articles/horizdropdowns/
+*/
+
+/*
+	original code @ http://www.htmldog.com/articles/suckerfish/dropdowns/example/
+*/
+
+#sfnav, #sfnav ul {
+list-style: none !important;
+line-height: 1;
+background: transparent;
+font-weight: bold;
+padding: 0;
+margin: 0;
+position: absolute
+}
+#sfnav a {
+display: block;
+color: #1a181d;
+text-decoration: none;
+padding: 0px 10px
+}
+#sfnav a:hover {
+color: gray;
+text-decoration: none
+}
+#sfnav li {
+float: left;
+width: 88px;
+padding: 0
+}
+#sfnav li ul {
+position: absolute;
+left: -999em;
+width: 13.9em;
+height: auto;
+font-weight: normal;
+border-width: 0.25em;
+margin: 0
+}
+#sfnav li li {
+width: 13.9em
+}
+#sfnav li ul ul {
+margin: -1.75em 0 0 14em
+}
+#sfnav li:hover ul ul, #sfnav li:hover ul ul ul, #nav3 .navfxenabled li:hover ul, #nav3 .navfxenabled li:hover ul ul, #nav3 .navfxenabled li:hover ul ul ul, #nav3 .navfxenabled li.over ul ul,#nav3 .navfxenabled li.over ul ul ul {
+left: -999em
+}
+#sfnav li:hover ul, #nav3 .navfxenabled li.over ul {
+left: auto
+}
+#sfnav li li:hover ul, #sfnav li li li:hover ul, #nav3 .navfxenabled li li.over ul, #nav3 .navfxenabled li li li.over ul {
+left: -2px
+}
+#nav3 li li.over ul.leftover, #nav3 .navfxenabled li li li.over ul.leftover, #nav3 .navfxenabled li li li li.over ul.leftover {
+left: -28.44em
+}
+#nav3 #sfnav li.over,#sfnav li:hover {
+background: transparent
+}
+.navdiv {
+width:88px;
+height:96px
+}
+.subnavdiv {
+padding:5px;
+border-left:1px solid black;
+border-right:1px solid black;
+border-bottom:1px solid black;
+font-size:80% !important;
+background-color: #fff
+}
+.masterli {
+padding:0;
+margin:0;
+list-style: none !important
+}
+.subli {
+list-style: none !important
+}
+#tvnew th, #modcat th, #newplayerform th, #radionew th, #radioedit th, #addnewgenre th, #editplayerform th, #genrelist th, #movesongs th, #newmime th, #modmime th, #findmime th, #editmpegform th, #batchform th, #approveform th, #rewritetags th {
+background-color: #231f20;
+color: #fff;
+vertical-align: top;
+background-image: url('../images/hortop.jpg');
+background-repeat: repeat-x;
+margin: 0px;
+padding: 0px;
+font-size: 24px
+}
+#tvnew td.head, #modcat td.head, #newplayerform td.head, #radionew td.head, #radioedit td.head, #addnewgenre td.head, #editplayerform td.head, #genrelist td.head, #movesongs td.head, #newmime td.head, #modmime td.head, #findmime td.head, #editmpegform td.head, #batchform td.head, #approveform td.head, #rewritetags td.head {
+width: 200px !important
+}
+#tvnew td.head, #tvnew td.even, #modcat td.head, #modcat td.even, #newplayerform td.head, #newplayerform td.even, #radionew td.head, #radionew td.even, #radioedit td.head, #radioedit td.even, #addnewgenre td.head, #addnewgenre td.even, #editplayerform td.head, #editplayerform td.even, #genrelist td.head, #genrelist td.even, #indexshowme td.odd, #movesongs td.head, #movesongs td.even, #listfiles td.odd, #listfiles td.even, #listplayers td.odd, #listplayers td.even, #newmime td.head, #newmime td.even, #listmimes td.head, #listmimes td.even, #modmime td.head, #modmime td.even, #findmime td.head, #findmime td.even, #editmpegform td.head, #editmpegform td.even, #batchform td.head, #batchform td.even, #approveform td.head, #approveform td.even, #rewritetags td.head, #rewritetags td.even {
+background-color: #231f20;
+color: #fff;
+padding: 5px
+}
+#loading { background: #fff url('../images/indicator.gif') left no-repeat; color: #369; display: none; font-weight: bold; margin: 1em 0; padding-left: 20px }
+table.browsetable th { font-size: 10px }
+table.browsetable td { font-size: 10px; padding: 3px }
+table.browsetable td.header { background-color: #cccccc; padding-top: 2px; padding-bottom: 2px; font-weight: bold }
+table.browsetable tr.even_files { background-color: #fefefe }
+table.browsetable tr.odd_files {
+background-color: #e9e9e9
+}
+table.dump {
+border-top: solid 1px #cccccc;
+border-left: solid 1px #cccccc;
+margin: 2px
+}
+table.dump td {
+font: 9pt sans-serif;
+padding-top: 1px;
+padding-bottom: 1px;
+padding-left: 5px;
+padding-right: 5px;
+border-right: solid 1px #cccccc;
+border-bottom: solid 1px #cccccc
+}
+td.dump_string {
+font-weight: bold;
+color: #0000cc
+}
+td.dump_integer {
+color: #cc0000;
+font-weight: bold
+}
+td.dump_double {
+color: orange;
+font-weight: bold
+}
+td.dump_boolean {
+color: #333333;
+font-weight: bold
+}
+.error {
+color: red
+}

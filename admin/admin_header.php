@@ -1,5 +1,4 @@
 <?php
-// $Id: admin/admin_header.php,v 0.90 2004/09/10 10:00:00 frankblack Exp $
 //  ------------------------------------------------------------------------ //
 //                XOOPS - PHP Content Management System                      //
 //                    Copyright (c) 2000 XOOPS.org                           //
@@ -25,15 +24,19 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA //
 //  ------------------------------------------------------------------------ //
 
-    include __DIR__ . '/../../../include/cp_header.php';
-    include_once __DIR__ . '/../../../class/module.textsanitizer.php';
+	include '../../../include/cp_header.php';
+	include_once '../../../class/module.textsanitizer.php';
+	include_once XOOPS_ROOT_PATH.'/modules/debaser/include/constants.php';
 
-    $myts =  MyTextSanitizer::getInstance();
+	include_once DEBASER_RINC.'/functions.php';
 
-    $imagearray = array(
-    'editimg' => "<img src='../images/edit.gif' alt='"._EDIT."' align='middle'>",
-    'deleteimg' => "<img src='../images/delete.gif' alt='"._DELETE."' align='middle'>",
-    'online' => "<img src='../images/on.gif' alt='"._AM_DEBASER_ONLINE."' align='middle'>",
-    'offline' => "<img src='../images/off.gif' alt='"._AM_DEBASER_OFFLINE."' align='middle'>",
-    'approved' => "<img src='../images/play.gif' alt='"._AM_DEBASER_PLAY."' align='middle'>"
-    );
+	$module_handler =& xoops_gethandler('module');
+	$module =& $module_handler->getByDirname('debaser');
+	$module_id = $module->getVar('mid');
+	$gperm_handler = &xoops_gethandler('groupperm');
+	$groups = (is_object($xoopsUser)) ? $xoopsUser->getGroups() : XOOPS_GROUP_ANONYMOUS;
+
+	$myts = &MyTextSanitizer::getInstance();
+
+	$imagearray = array('editimg' => "<img src='".DEBASER_UIMG."/edit.png' alt='"._EDIT."' title='"._EDIT."' align='middle' />", 'deleteimg' => "<img src='".DEBASER_UIMG."/delete.png' alt='"._DELETE."' title='"._DELETE."' align='middle' />", 'online' => "<img src='".DEBASER_UIMG."/on.gif' alt='"._AM_DEBASER_ONLINE."' title='"._AM_DEBASER_ONLINE."' align='middle' />", 'offline' => "<img src='".DEBASER_UIMG."/off.gif' alt='"._AM_DEBASER_OFFLINE."' title='"._AM_DEBASER_OFFLINE."' align='middle' />");
+?>

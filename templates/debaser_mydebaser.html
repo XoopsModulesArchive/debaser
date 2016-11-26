@@ -1,22 +1,39 @@
-<p><strong><{$smarty.const._MD_DEBASER_MYFAVPLAYER}></strong></p>
-
-<form action="mydebaser.php" method="post">
-<table class="outer" style="width:300px;">
-<{section name=f loop=$extlist}>
-<tr>
-<td class="even"><{$extlist[f].mime_ext}> <{$playervar}></td>
-<td class="odd" align="center"><select name="selectvalues[]">
-<{section name=i loop=$playerlist}>
-	<option value="<{$extlist[f].mime_ext}>/<{$playerlist[i].playerid}>"><{$playerlist[i].playername}></option>
-<{/section}>
-</select></td>
-
-
-
-</tr>
-<{/section}>
-</table>
-<input type="hidden" name="op" value="selplayer" />
-<input type="submit" value="<{$smarty.const._SUBMIT}>" />
-</form>
+<{include file='db:debaser_search.html'}>
 <br />
+<script type="text/javascript">
+document.write('<div><b><{$smarty.const._MD_DEBASER_PLUGINS}>:<\/b>');
+if (pluginlist.indexOf("Flash")!=-1) document.write(' <img src="<{$smarty.const.DEBASER_UIMG}>/flashok.jpg" alt="Flash" title="Flash" \/> ');
+if (pluginlist.indexOf("Windows Media Player")!=-1) document.write(' <img src="<{$smarty.const.DEBASER_UIMG}>/wmpok.jpg" alt="Windows Media Player" title="Windows Media Player" \/> ');
+if (pluginlist.indexOf("RealPlayer")!=-1) document.write(' <img src="<{$smarty.const.DEBASER_UIMG}>/realok.jpg" alt="RealPlayer" title="RealPlayer" \/> ');
+if (pluginlist.indexOf("QuickTime")!=-1) document.write(' <img src="<{$smarty.const.DEBASER_UIMG}>/quickok.jpg" alt="QuickTime" title="QuickTime" \/> ');
+document.write('<\/div><br \/><br \/>');
+</script>
+
+
+<{if $myplaylist == true}>
+<p><strong><{$smarty.const._MD_DEBASER_MYPLAYLIST}></strong></p>
+
+<{if $hasplaylistplayer == true}>
+<p>
+<{section name=i loop=$getplayers}>
+<{if $getplayers[i].external == true}><a href="<{$smarty.const.DEBASER_URL}>/getfile.php?op=playlist&amp;uid=<{$xoops_userid}>&amp;playlistformat=<{$getplayers[i].playlistformat}>" target="_blank"><img src="<{$smarty.const.DEBASER_UIMG}>/playericons/<{$getplayers[i].playericon}>" alt="<{$getplayers[i].name}>" title="<{$getplayers[i].name}>" style="padding-left:2px; padding-right:2px" /></a><{else}><img src="<{$smarty.const.DEBASER_UIMG}>/playericons/<{$getplayers[i].playericon}>" alt="<{$getplayers[i].name}>" title="<{$getplayers[i].name}>" onclick="javascript:openWithSelfMain('<{$smarty.const.DEBASER_URL}>/player.php?playlist=<{$xoops_userid}>&amp;player=<{$getplayers[i].id}>','player',10,10)" style="padding-left:2px; padding-right:2px" /><{/if}>
+<{/section}>
+</p>
+<{/if}>
+
+<{if $anyfiles == true}>
+<p class="warning"><b>you must enable javascript</b></p>
+<form action="" id="reorderform" name="reorderform" class="jsecure">
+<ul id="debaserreorder">
+	<{section name=i loop=$myfavfiles}>
+		<li title="<{$myfavfiles[i].id}>" style="padding-bottom:5px"><div class="diffi"><{$myfavfiles[i].artist}>: <{$myfavfiles[i].title}></div> <div style="padding-bottom:10px"><img src="<{$smarty.const.DEBASER_UIMG}>/delete.png" id="a<{$myfavfiles[i].id}>" class="removefromplaylist" title="<{$smarty.const._DELETE}>" alt="<{$smarty.const._DELETE}>" /></div></li> 
+	<{/section}>
+</ul>
+</form>
+<{/if}>
+<{/if}>
+
+
+<{if $tplmysettings == true}>
+<{$mysettings}>
+<{/if}>
